@@ -1,7 +1,3 @@
-require_relative 'Utils'
-require_relative 'RPG'
-require 'zlib'
-
 class RVData2Decompiler
 
   def initialize
