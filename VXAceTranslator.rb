@@ -5,6 +5,8 @@ require_relative 'Modules/RPG'
 require 'optparse'
 require 'zlib'
 
+$stdout.sync = true
+
 USAGE = "#{RED_COLOR}Usage: RPGMakerVXAceTranslator.rb -d GAME_DIR|-c DECOMPILED_DIR -o OUTPUT#{RESET_COLOR}"
 options = {}
 
@@ -18,10 +20,14 @@ while (arg = ARGV.shift)
   when '-o', '--output'
     options[:output] = ARGV.shift
   when '-h', '--help'
-    puts USAGE
+    print USAGE
+    $stdout.flush
+
     exit
   else
-    puts USAGE
+    print USAGE
+    $stdout.flush
+
     exit
   end
 

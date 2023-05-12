@@ -18,7 +18,9 @@ class RVData2Decompiler
       file_basename = File.basename(filename, '.*')
       next unless SUPPORTED_FORMATS.any? { |s| file_basename.include?(s) }
 
-      puts "#{RED_COLOR}Decompiling #{filename}...#{RESET_COLOR}"
+      print "#{RED_COLOR}Decompiling #{filename}...\n#{RESET_COLOR}"
+      $stdout.flush
+
       File.open("#{data_path}/#{filename}", 'rb') do |rvdata2_file|
         @rvdata2_data = Marshal.load(rvdata2_file.read)
       end
@@ -72,7 +74,8 @@ class RVData2Decompiler
         metadata_file.write(Marshal.dump(@rvdata2_data))
       end
 
-      puts "#{GREEN_COLOR}Decompiled #{filename}\n#{RESET_COLOR}"
+      print "#{GREEN_COLOR}Decompiled #{filename}\n#{RESET_COLOR}"
+      $stdout.flush
     end
 
   end

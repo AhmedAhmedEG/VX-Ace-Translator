@@ -18,7 +18,9 @@ class RVData2Compiler
       file_basename = File.basename(filename, '.*')
       next unless SUPPORTED_FORMATS.any? { |s| file_basename.include?(s) }
 
-      puts "#{RED_COLOR}Compiling #{file_basename}.rvdata2...#{RESET_COLOR}"
+      print "#{RED_COLOR}Compiling #{file_basename}.rvdata2...\n#{RESET_COLOR}"
+      $stdout.flush
+
       File.open("#{metadata_path}/#{filename}", "rb") do |metadata_file|
         @metadata = Marshal.load(metadata_file.read)
       end
@@ -71,7 +73,8 @@ class RVData2Compiler
         rvdata2_file.write(Marshal.dump(@metadata))
       end
 
-      puts "#{GREEN_COLOR}Compiled #{file_basename}.rvdata2\n#{RESET_COLOR}"
+      print "#{GREEN_COLOR}Compiled #{file_basename}.rvdata2\n#{RESET_COLOR}"
+      $stdout.flush
     end
 
   end
