@@ -19,3 +19,16 @@ RESET_COLOR = "\e[0m"
 def textualize(attribute)
   attribute.inspect.gsub(/\\u([\da-fA-F]{4})/) { [$1.to_i(16)].pack("U*") }
 end
+
+def join(*paths)
+
+  if paths[0].include?('\\')
+    joined_path = File.join(paths).gsub("/", "\\")
+  elsif paths[0].include?('/')
+    joined_path = File.join(paths).gsub("\\", "/")
+  else
+    joined_path = File.join(paths)
+  end
+
+  joined_path
+end

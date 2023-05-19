@@ -9,7 +9,7 @@ class RVData2Compiler
   attr_accessor :metadata
 
   def compile(decompiled_path, output_path = 'Compiled')
-    metadata_path = "#{decompiled_path}/Metadata"
+    metadata_path = join(decompiled_path, 'Metadata')
     @output_path = output_path
 
     Dir.foreach(metadata_path) do |filename|
@@ -81,7 +81,7 @@ class RVData2Compiler
 
   def compile_actors(path)
 
-    File.open("#{path}/Actors.txt", 'r:UTF-8') do |actors_file|
+    File.open(join(path, 'Actors.txt'), 'r:UTF-8') do |actors_file|
       ind = 0
 
       actors_file.each_line do |line|
@@ -113,7 +113,7 @@ class RVData2Compiler
 
   def compile_classes(path)
 
-    File.open("#{path}/Classes.txt", 'r:UTF-8') do |classes_file|
+    File.open(join(path, 'Classes.txt'), 'r:UTF-8') do |classes_file|
       ind = 0
 
       classes_file.each_line do |line|
@@ -139,7 +139,7 @@ class RVData2Compiler
 
   def compile_common_events(path)
 
-    File.open("#{path}/CommonEvents.txt", 'r:UTF-8') do |common_events_file|
+    File.open(join(path, 'CommonEvents.txt'), 'r:UTF-8') do |common_events_file|
       event_ind = 0
 
       common_events_file.each_line do |line|
@@ -161,7 +161,7 @@ class RVData2Compiler
 
   def compile_enemies(path)
 
-    File.open("#{path}/Enemies.txt", 'r:UTF-8') do |enemies_file|
+    File.open(join(path, 'Enemies.txt'), 'r:UTF-8') do |enemies_file|
       ind = 0
 
       enemies_file.each_line do |line|
@@ -189,7 +189,7 @@ class RVData2Compiler
 
   def compile_items(path)
 
-    File.open("#{path}/Items.txt", 'r:UTF-8') do |items_file|
+    File.open(join(path, 'Items.txt'), 'r:UTF-8') do |items_file|
       ind = 0
 
       items_file.each_line do |line|
@@ -215,7 +215,7 @@ class RVData2Compiler
 
   def compile_map(path, file_basename)
 
-    File.open("#{path}/Maps/#{file_basename}.txt", 'r:UTF-8') do |map_file|
+    File.open(join(path, 'Maps', "#{file_basename}.txt"), 'r:UTF-8') do |map_file|
       event_ind = 0
       page_ind = 0
 
@@ -246,7 +246,7 @@ class RVData2Compiler
 
   def compile_map_infos(path)
 
-    File.open("#{path}/MapInfos.txt", 'r:UTF-8') do |map_infos_file|
+    File.open(join(path, 'MapInfos.txt'), 'r:UTF-8') do |map_infos_file|
       id = 0
 
       map_infos_file.each_line do |line|
@@ -269,7 +269,7 @@ class RVData2Compiler
   def compile_scripts(path)
 
     @metadata.each_with_index  do |script, i|
-      script_path = "#{path}/Scripts/#{i} - #{File.basename(script[1])}.rb"
+      script_path =  join(path, 'Scripts', "#{i} - #{File.basename(script[1])}.rb")
 
       File.open(script_path, 'rb') do |script_file|
         script << Zlib::Deflate.deflate(script_file.read)
@@ -281,7 +281,7 @@ class RVData2Compiler
 
   def compile_skills(path)
 
-    File.open("#{path}/Skills.txt", 'r:UTF-8') do |skills_file|
+    File.open(join(path, 'Skills.txt'), 'r:UTF-8') do |skills_file|
       ind = 0
 
       skills_file.each_line do |line|
@@ -311,7 +311,7 @@ class RVData2Compiler
 
   def compile_states(path)
 
-    File.open("#{path}/States.txt", 'r:UTF-8') do |states_file|
+    File.open(join(path, 'States.txt'), 'r:UTF-8') do |states_file|
       ind = 0
 
       states_file.each_line do |line|
@@ -345,7 +345,7 @@ class RVData2Compiler
 
   def compile_system(path)
 
-    File.open("#{path}/System.txt", 'r:UTF-8') do |system_file|
+    File.open(join(path, 'System.txt'), 'r:UTF-8') do |system_file|
 
       system_file.each_line do |line|
 
@@ -372,7 +372,7 @@ class RVData2Compiler
 
     end
 
-    File.open("#{path}/System/Elements.txt", 'r:UTF-8') do |elements_file|
+    File.open(join(path, 'System', 'Elements.txt'), 'r:UTF-8') do |elements_file|
 
       elements_file.each_line.with_index do |line, i|
         @metadata.elements[i + 1] = eval(line.strip)
@@ -380,7 +380,7 @@ class RVData2Compiler
 
     end
 
-    File.open("#{path}/System/Skill Types.txt", 'r:UTF-8') do |skill_types_file|
+    File.open(join(path, 'System', 'Skill Types.txt'), 'r:UTF-8') do |skill_types_file|
 
       skill_types_file.each_line.with_index do |line, i|
         @metadata.skill_types[i + 1] = eval(line.strip)
@@ -388,7 +388,7 @@ class RVData2Compiler
 
     end
 
-    File.open("#{path}/System/Weapon Types.txt", 'r:UTF-8') do |weapon_types_file|
+    File.open(join(path, 'System', 'Weapon Types.txt'), 'r:UTF-8') do |weapon_types_file|
 
       weapon_types_file.each_line.with_index do |line, i|
         @metadata.weapon_types[i + 1] = eval(line.strip)
@@ -396,7 +396,7 @@ class RVData2Compiler
 
     end
 
-    File.open("#{path}/System/Armor Types.txt", 'r:UTF-8') do |armor_types_file|
+    File.open(join(path, 'System', 'Armor Types.txt'), 'r:UTF-8') do |armor_types_file|
 
       armor_types_file.each_line.with_index do |line, i|
         @metadata.armor_types[i + 1] = eval(line.strip)
@@ -404,7 +404,7 @@ class RVData2Compiler
 
     end
 
-    File.open("#{path}/System/Switches.txt", 'r:UTF-8') do |switches_file|
+    File.open(join(path, 'System', 'Switches.txt'), 'r:UTF-8') do |switches_file|
 
       switches_file.each_line.with_index do |line, i|
         @metadata.switches[i + 1] = eval(line.strip)
@@ -412,7 +412,7 @@ class RVData2Compiler
 
     end
 
-    File.open("#{path}/System/Variables.txt", 'r:UTF-8') do |variables_file|
+    File.open(join(path, 'System', 'Variables.txt'), 'r:UTF-8') do |variables_file|
 
       variables_file.each_line.with_index do |line, i|
         @metadata.variables[i + 1] = eval(line.strip)
@@ -420,7 +420,7 @@ class RVData2Compiler
 
     end
 
-    File.open("#{path}/System/Terms.txt", 'r:UTF-8') do |terms_file|
+    File.open(join(path, 'System', 'Terms.txt'), 'r:UTF-8') do |terms_file|
       values = []
 
       terms_file.each_line do |line|
@@ -439,7 +439,7 @@ class RVData2Compiler
 
   def compile_troops(path)
 
-    File.open("#{path}/Troops.txt", 'r:UTF-8') do |troops_file|
+    File.open(join(path, 'Troops.txt'), 'r:UTF-8') do |troops_file|
       troop_ind = 0
       page_ind = 0
 
