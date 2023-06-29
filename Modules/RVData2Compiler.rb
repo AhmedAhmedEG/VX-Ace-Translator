@@ -147,7 +147,7 @@ class RVData2Compiler
         case line
         when /^Event (\d+)/
           event_ind = $1.to_i
-        when /\w+(\d+)\((.*)\)/
+        when /\D+(\d+)\((.*)\)/
           @metadata[event_ind].list[$1.to_i].parameters = eval($2.to_s)
         else
           next
@@ -232,7 +232,7 @@ class RVData2Compiler
           event_ind = $1.to_i
         when /^Page (\d+)/
           page_ind = $1.to_i
-        when /\w+(\d+)\((.*)\)/
+        when /\D+(\d+)\((.*)\)/
           @metadata.events[event_ind].pages[page_ind].list[$1.to_i].parameters = eval($2.to_s)
         else
           next
@@ -373,49 +373,55 @@ class RVData2Compiler
     end
 
     File.open(join(path, 'System', 'Elements.txt'), 'r:UTF-8') do |elements_file|
+      offset = @metadata.elements[0].nil? ? 1 : 0
 
       elements_file.each_line.with_index do |line, i|
-        @metadata.elements[i + 1] = eval(line.strip)
+        @metadata.elements[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(path, 'System', 'Skill Types.txt'), 'r:UTF-8') do |skill_types_file|
+      offset = @metadata.skill_types[0].nil? ? 1 : 0
 
       skill_types_file.each_line.with_index do |line, i|
-        @metadata.skill_types[i + 1] = eval(line.strip)
+        @metadata.skill_types[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(path, 'System', 'Weapon Types.txt'), 'r:UTF-8') do |weapon_types_file|
+      offset = @metadata.weapon_types[0].nil? ? 1 : 0
 
       weapon_types_file.each_line.with_index do |line, i|
-        @metadata.weapon_types[i + 1] = eval(line.strip)
+        @metadata.weapon_types[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(path, 'System', 'Armor Types.txt'), 'r:UTF-8') do |armor_types_file|
+      offset = @metadata.armor_types[0].nil? ? 1 : 0
 
       armor_types_file.each_line.with_index do |line, i|
-        @metadata.armor_types[i + 1] = eval(line.strip)
+        @metadata.armor_types[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(path, 'System', 'Switches.txt'), 'r:UTF-8') do |switches_file|
+      offset = @metadata.switches[0].nil? ? 1 : 0
 
       switches_file.each_line.with_index do |line, i|
-        @metadata.switches[i + 1] = eval(line.strip)
+        @metadata.switches[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(path, 'System', 'Variables.txt'), 'r:UTF-8') do |variables_file|
+      offset = @metadata.variables[0].nil? ? 1 : 0
 
       variables_file.each_line.with_index do |line, i|
-        @metadata.variables[i + 1] = eval(line.strip)
+        @metadata.variables[i + offset] = eval(line.strip)
       end
 
     end
