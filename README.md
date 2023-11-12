@@ -5,6 +5,7 @@ Efficient translator for RPG Maker VX Ace games, fully written in Ruby, that can
 Call the VXAceTranslator.exe file with the following arguments:-
 
 ```VXAceTranslator.exe -d GAME_DIR|-c DECOMPILED_DIR -o OUTPUT```
+
 You can optionally add (-t TARGET_FILESNAME) in case you want to decompile/compile spacific files, only files that include that target in it's basename will be proccessed.
 
 # How To Build
