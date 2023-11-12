@@ -8,15 +8,19 @@ class RVData2Compiler
   attr_accessor :output_path
   attr_accessor :metadata
 
-  def compile(decompiled_path, output_path = 'Compiled')
+  def compile(decompiled_path, output_path = 'Compiled', target_basename = '')
     metadata_path = join(decompiled_path, 'Metadata')
     @output_path = output_path
 
     Dir.foreach(metadata_path) do |filename|
-      next if filename == '.' || filename == '..'
+      next if %w[. ..].include?(filename) || File.directory?(join(metadata_path, filename))
 
       file_basename = File.basename(filename, '.*')
       next unless SUPPORTED_FORMATS.any? { |s| file_basename.include?(s) }
+
+      if target_basename != ''
+        next unless file_basename.include?(target_basename)
+      end
 
       print "#{RED_COLOR}Compiling #{file_basename}.rvdata2...\n#{RESET_COLOR}"
       $stdout.flush
@@ -138,19 +142,33 @@ class RVData2Compiler
   end
 
   def compile_common_events(path)
+    event_ind = 0
 
-    File.open(join(path, 'CommonEvents.txt'), 'r:UTF-8') do |common_events_file|
-      event_ind = 0
+    Dir.foreach(join(path, 'CommonEvents')) do |common_event_filename|
+      next if %w[. ..].include?(common_event_filename)
 
-      common_events_file.each_line do |line|
+      File.open(join(path, 'CommonEvents', common_event_filename), 'r:UTF-8') do |common_event_file|
 
-        case line
-        when /^Event (\d+)/
-          event_ind = $1.to_i
-        when /\D+(\d+)\((.*)\)/
-          @metadata[event_ind].list[$1.to_i].parameters = eval($2.to_s)
-        else
-          next
+        common_event_file.each_line do |line|
+
+          case line
+          when /^CommonEvent (\d+)/
+            event_ind = $1.to_i
+
+          when /^Name = (".*")/
+            @metadata[event_ind].name = eval($1.to_s)
+
+          when /(\d+)-\D+?\((.*)\)/
+            parameters = eval($2.to_s)
+            deserialize_parameters(parameters)
+
+            @metadata[event_ind].list[$1.to_i].parameters = parameters
+
+          else
+            next
+
+          end
+
         end
 
       end
@@ -214,10 +232,10 @@ class RVData2Compiler
   end
 
   def compile_map(path, file_basename)
+    event_ind = 0
+    page_ind = 0
 
     File.open(join(path, 'Maps', "#{file_basename}.txt"), 'r:UTF-8') do |map_file|
-      event_ind = 0
-      page_ind = 0
 
       map_file.each_line do |line|
 
@@ -228,14 +246,18 @@ class RVData2Compiler
           @metadata.parallax_name = eval($1.to_s)
         when /^Note = (".*")/
           @metadata.note = eval($1.to_s)
-        when /^Event (\d+)/
+        when /^CommonEvent (\d+)/
           event_ind = $1.to_i
-        when /^Page (\d+)/
+        when /Page (\d+)/
           page_ind = $1.to_i
-        when /\D+(\d+)\((.*)\)/
-          @metadata.events[event_ind].pages[page_ind].list[$1.to_i].parameters = eval($2.to_s)
+        when /(\d+)-\D+?\((.*)\)/
+          parameters = eval($2.to_s)
+          deserialize_parameters(parameters)
+
+          @metadata.events[event_ind].pages[page_ind].list[$1.to_i].parameters = parameters
         else
           next
+
         end
 
       end
@@ -456,12 +478,16 @@ class RVData2Compiler
           troop_ind = $1.to_i
         when /^Name = (".*")/
           @metadata[troop_ind].name = eval($1.to_s)
-        when /^Page (\d+)/
+        when /Page (\d+)/
           page_ind = $1.to_i
-        when /\w+(\d+)\((.*)\)/
-          @metadata[troop_ind].pages[page_ind].list[$1.to_i].parameters = eval($2.to_s)
+        when /(\d+)-\D+?\((.*)\)/
+          parameters = eval($2.to_s)
+          deserialize_parameters(parameters)
+
+          @metadata[troop_ind].pages[page_ind].list[$1.to_i].parameters = parameters
         else
           next
+
         end
 
       end

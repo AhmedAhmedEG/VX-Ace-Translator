@@ -1,22 +1,29 @@
+require 'stringio'
+
 class RVData2Decompiler
 
   def initialize
     @output_path = ''
     @rvdata2_data = []
+    @indentation = ' ' * 2
   end
 
   attr_accessor :output_path
   attr_accessor :rvdata2_data
 
-  def decompile(game_path, output_path='Decompiled')
+  def decompile(game_path, output_path='Decompiled', target_basename='')
     @output_path = output_path
     data_path = join(game_path, 'Data')
 
     Dir.foreach(data_path) do |filename|
-      next if filename == '.' || filename == '..'
+      next if %w[. ..].include?(filename) || File.directory?(join(data_path, filename))
 
       file_basename = File.basename(filename, '.*')
       next unless SUPPORTED_FORMATS.any? { |s| file_basename.include?(s) }
+
+      if target_basename != ''
+        next unless file_basename.include?(target_basename)
+      end
 
       print "#{RED_COLOR}Decompiling #{filename}...\n#{RESET_COLOR}"
       $stdout.flush
@@ -121,27 +128,36 @@ class RVData2Decompiler
 
   # Array of RPG::CommonEvent class instances
   def decompile_common_events
+    Dir.mkdir(join(@output_path, 'CommonEvents')) unless Dir.exist?(join(@output_path, 'CommonEvents'))
 
-    File.open(join(@output_path, 'CommonEvents.txt'), 'w:UTF-8') do |common_events_file|
+    last_indentation = 0
+    @rvdata2_data.each_with_index do |event, i|
 
-      @rvdata2_data.each_with_index do |event, i|
-        next if event.nil?
-        current_event = i
+      next if event.nil? || event.list.empty?
+      common_events_file = StringIO.new('')
 
-        event.list.each_with_index do |event_command, j|
-          event_code = event_command.code
-          next unless TARGETED_EVENT_COMMANDS.keys.include?(event_code)
+      common_events_file.write("CommonEvent #{i}\n")
+      common_events_file.write("Name = #{textualize(event.name)}\n\n")
 
-          unless current_event.nil?
-            common_events_file.write("Event #{i}\n")
-            current_event = nil
-          end
+      event.list.each_with_index do |event_command, j|
+        event_code = event_command.code
+        next unless TARGETED_EVENT_COMMANDS.keys.include?(event_code) && !event_command.parameters.empty?
 
-          common_events_file.write("#{TARGETED_EVENT_COMMANDS[event_code]}#{j}(#{textualize(event_command.parameters)})\n")
+        serialize_parameters(event_command.parameters)
+        if event_command.indent != last_indentation && event_command.indent == 0
+          common_events_file.write("\n")
         end
 
-        if current_event.nil?
-          common_events_file.write("\n")
+        last_indentation = event_command.indent
+        common_events_file.write(@indentation * (event_command.indent + 1) +
+                                 "#{j}-#{TARGETED_EVENT_COMMANDS[event_code]}(#{textualize(event_command.parameters)})\n")
+      end
+
+      common_events_file.rewind
+      if common_events_file.each_line.count != 3
+
+        File.open(join(@output_path, 'CommonEvents', "CommonEvent#{i}.txt"), 'w:UTF-8') do |o|
+          o.write(common_events_file.string)
         end
 
       end
@@ -208,16 +224,18 @@ class RVData2Decompiler
             next unless TARGETED_EVENT_COMMANDS.keys.include?(event_code)
 
             unless current_event.nil?
-              map_file.write("Event #{key}\n")
+              map_file.write("CommonEvent #{key}\n")
               current_event = nil
             end
 
             unless current_page.nil?
-              map_file.write("\nPage #{i}\n")
+              map_file.write("\n#{@indentation}Page #{i}\n")
               current_page = nil
             end
 
-            map_file.write("#{TARGETED_EVENT_COMMANDS[event_code]}#{j}(#{textualize(event_command.parameters)})\n")
+            serialize_parameters(event_command.parameters)
+            map_file.write(@indentation * (event_command.indent + 2) +
+                           "#{j}-#{TARGETED_EVENT_COMMANDS[event_code]}(#{textualize(event_command.parameters)})\n")
           end
 
         end
@@ -471,7 +489,9 @@ class RVData2Decompiler
               current_page = nil
             end
 
-            troops_file.write("#{TARGETED_EVENT_COMMANDS[event_code]}#{k}(#{textualize(event_command.parameters)})\n")
+            serialize_parameters(event_command.parameters)
+            troops_file.write(@indentation * (event_command.indent + 1) +
+                              "#{k}-#{TARGETED_EVENT_COMMANDS[event_code]}(#{textualize(event_command.parameters)})\n")
           end
 
           if current_page.nil?
