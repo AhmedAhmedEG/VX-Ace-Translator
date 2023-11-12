@@ -8,6 +8,13 @@ Call the VXAceTranslator.exe file with the following arguments:-
 
 You can optionally add (-t TARGET_FILESNAME) in case you want to decompile/compile spacific files, only files that include that target in it's basename will be proccessed.
 
+# Examples
+1-``VXAceTranslator.exe -d oath/to/game/folder -o path/to/output/folder -t Map
+VXAceTranslator.exe -d -c path/to/decompile/output/folder -o path/to/output/folder -t Map``
+
+2-``VXAceTranslator.exe -d oath/to/game/folder -o path/to/output/folder -t Map002
+VXAceTranslator.exe -d -c path/to/decompile/output/folder -o path/to/output/folder -t Map002``
+
 # How To Build
 1- Make sure you have Ruby v2.7.8, any version higher than that have a different formate for marshaled files, and it's not compatible with the engine.
 
