@@ -9,12 +9,15 @@ Call the VXAceTranslator.exe file with the following arguments:-
 You can optionally add (-t TARGET_FILESNAME) in case you want to decompile/compile spacific files, only files that include that target in it's basename will be proccessed.
 
 # Examples
-1-```Decompiling: VXAceTranslator.exe -d oath/to/game/folder -o path/to/output/folder -t Map```
+Example 1:-
 
+```Decompiling: VXAceTranslator.exe -d path/to/game/folder -o path/to/output/folder -t Map```
+  
 ```Compiling: VXAceTranslator.exe -d -c path/to/decompile/output/folder -o path/to/output/folder -t Map```
 
+Example 2:-
 
-2-```Decompiling: VXAceTranslator.exe -d oath/to/game/folder -o path/to/output/folder -t Map002```
+```Decompiling: VXAceTranslator.exe -d path/to/game/folder -o path/to/output/folder -t Map002```
 
 ```Compiling: VXAceTranslator.exe -d -c path/to/decompile/output/folder -o path/to/output/folder -t Map002```
 
