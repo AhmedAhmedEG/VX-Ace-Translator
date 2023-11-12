@@ -13,6 +13,7 @@ You can optionally add (-t TARGET_FILESNAME) in case you want to decompile/compi
 
 ```Compiling: VXAceTranslator.exe -d -c path/to/decompile/output/folder -o path/to/output/folder -t Map```
 
+
 2-```Decompiling: VXAceTranslator.exe -d oath/to/game/folder -o path/to/output/folder -t Map002```
 
 ```Compiling: VXAceTranslator.exe -d -c path/to/decompile/output/folder -o path/to/output/folder -t Map002```
