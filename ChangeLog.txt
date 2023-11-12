@@ -1,0 +1,17 @@
+VX Ace Translator v1.5.4.6:-
+
+[Minor]
+-Added a new argument (-t or --target) that let's you write the name or the subname of the file(s) you only want to compile/decompile.
+-Added name attribute for CommonEvents.
+-Added most of EventCommands support.
+-Added indentation for EventCommands.
+-Added indentation for Pages.
+
+[Tweaks]
+-Changed the formate for EventCommands, now indexes are written at the start of the line followed by a "-" followed by the EventCommand name followed by it's parameters.
+-Changed the CommonEvents formate to be a folder of text files, one file per CommonEvent.
+-Every Conditional EventCommand will have an empty line after it's end.
+
+[Bug Fixes]
+-Fixed a bug where troops.rvdata compilation was using outdated regex
+-Fixed a bug where having a folder inside "Data" directory of a game was causing a crash.
