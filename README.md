@@ -11,15 +11,21 @@ You can optionally add (-t TARGET_FILESNAME) in case you want to decompile/compi
 # Examples
 Example 1:-
 
-```Decompiling: VXAceTranslator.exe -d path/to/game/folder -o path/to/output/folder -t Map```
+```Decompiling: VXAceTranslator.exe -d path/to/game/folder -o path/to/decompiled/output/folder```
   
-```Compiling: VXAceTranslator.exe -d -c path/to/decompile/output/folder -o path/to/output/folder -t Map```
+```Compiling: VXAceTranslator.exe -d -c path/to/decompiled/output/folder -o path/to/compiled/output/folder```
 
 Example 2:-
 
-```Decompiling: VXAceTranslator.exe -d path/to/game/folder -o path/to/output/folder -t Map002```
+```Decompiling: VXAceTranslator.exe -d path/to/game/folder -o path/to/decompiled/output/folder -t Map```
+  
+```Compiling: VXAceTranslator.exe -d -c path/to/decompiled/output/folder -o path/to/compiled/output/folder -t Map```
 
-```Compiling: VXAceTranslator.exe -d -c path/to/decompile/output/folder -o path/to/output/folder -t Map002```
+Example 3:-
+
+```Decompiling: VXAceTranslator.exe -d path/to/game/folder -o path/to/decompiled/output/folder -t Map001```
+  
+```Compiling: VXAceTranslator.exe -d -c path/to/decompiled/output/folder -o path/to/compiled/output/folder -t Map001```
 
 # How To Build
 1- Make sure you have Ruby v2.7.8, any version higher than that have a different formate for marshaled files, and it's not compatible with the engine.
