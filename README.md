@@ -24,6 +24,7 @@ Example 2:-
 ```Compiling: VXAceTranslator.exe -c path/to/game -t Map```
 
 Example 3:-
+
 ```Decompiling: VXAceTranslator.exe -d path/to/game -t Map001```
   
 ```Compiling: VXAceTranslator.exe -c path/to/game -t Map001```
