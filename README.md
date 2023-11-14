@@ -13,15 +13,20 @@ You can optionally add (-t TARGET_FILESNAME) in case you want to decompile/compi
 # Examples
 Example 1:-
 
-```Decompiling: VXAceTranslator.exe -d path/to/game -t Map001```
+```Decompiling: VXAceTranslator.exe -d path/to/game```
   
-```Compiling: VXAceTranslator.exe -c path/to/game -t Map001```
+```Compiling: VXAceTranslator.exe -c path/to/game```
 
 Example 2:-
 
 ```Decompiling: VXAceTranslator.exe -d path/to/game -t Map```
   
 ```Compiling: VXAceTranslator.exe -c path/to/game -t Map```
+
+Example 2:-
+```Decompiling: VXAceTranslator.exe -d path/to/game -t Map001```
+  
+```Compiling: VXAceTranslator.exe -c path/to/game -t Map001```
 
 # How To Build
 1- Make sure you have Ruby v2.7.8, any version higher than that have a different formate for marshaled files, and it's not compatible with the engine.
