@@ -1,4 +1,4 @@
-SUPPORTED_FORMATS = %w[Actors Classes CommonEvents Enemies Items Map MapInfos Scripts Skills States System Troops]
+SUPPORTED_FORMATS = %w[Actors Classes CommonEvents Enemies Items Map MapInfos Scripts Skills States System Troops Weapons Armors]
 
 # All common events that includes text.
 # TARGETED_EVENT_COMMANDS = {102 => 'ShowChoices',

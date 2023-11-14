@@ -10,25 +10,45 @@ class RVData2Decompiler
 
   attr_accessor :output_path
   attr_accessor :rvdata2_data
+  attr_accessor :indentation
 
-  def decompile(game_path, output_path='Decompiled', target_basename='')
-    @output_path = output_path
-    data_path = join(game_path, 'Data')
+  def decompile(game_path, output_path='', target_basename='')
+    input_path = join(game_path, 'Data')
 
-    Dir.foreach(data_path) do |filename|
-      next if %w[. ..].include?(filename) || File.directory?(join(data_path, filename))
+    # Decryption handling
+    unless Dir.exist?(input_path) && !Dir.empty?(input_path)
+      rgss3a_path = join(game_path, 'Game.rgss3a')
+
+      if File.exist?(rgss3a_path + '.old')
+        File.rename(rgss3a_path + '.old', rgss3a_path)
+      end
+
+      system("#{join('Resources', 'Tools', 'RPGMakerDecrypter.exe')} \"#{rgss3a_path}\"")
+      File.rename(rgss3a_path, rgss3a_path + '.old')
+    end
+
+    if output_path.empty?
+      @output_path = "Decompiled"
+    else
+      @output_path = output_path
+    end
+
+    FileUtils.mkdir_p(@output_path) unless Dir.exist?(@output_path)
+
+    Dir.foreach(input_path) do |filename|
+      next if %w[. ..].include?(filename) || File.directory?(join(input_path, filename))
 
       file_basename = File.basename(filename, '.*')
       next unless SUPPORTED_FORMATS.any? { |s| file_basename.include?(s) }
 
-      if target_basename != ''
+      unless target_basename.empty?
         next unless file_basename.include?(target_basename)
       end
 
       print "#{RED_COLOR}Decompiling #{filename}...\n#{RESET_COLOR}"
       $stdout.flush
 
-      File.open(join(data_path, filename), 'rb') do |rvdata2_file|
+      File.open(join(input_path, filename), 'rb') do |rvdata2_file|
         @rvdata2_data = Marshal.load(rvdata2_file.read)
       end
 
@@ -68,17 +88,18 @@ class RVData2Decompiler
       when 'Troops'
         self.decompile_troops
 
+      when 'Weapons'
+        self.decompile_weapons
+
+      when 'Armors'
+        self.decompile_armors
+
       else
 
         if file_basename.match(/\AMap\d+\z/)
           self.decompile_map(file_basename)
         end
 
-      end
-
-      Dir.mkdir(join(@output_path, 'Metadata')) unless Dir.exist?(join(@output_path, 'Metadata'))
-      File.open(join(@output_path, 'Metadata', "#{file_basename}.metadata"), 'wb') do |metadata_file|
-        metadata_file.write(Marshal.dump(@rvdata2_data))
       end
 
       print "#{GREEN_COLOR}Decompiled #{filename}\n#{RESET_COLOR}"
@@ -197,6 +218,42 @@ class RVData2Decompiler
         items_file.write("Name = #{textualize(item.name)}\n")
         items_file.write("Description = #{textualize(item.description)}\n")
         items_file.write("Note = #{textualize(item.note)}\n\n")
+      end
+
+    end
+
+  end
+
+  # Array of RPG::Weapon class instances
+  def decompile_weapons
+
+    File.open(join(@output_path, 'Weapons.txt'), 'w:UTF-8') do |weapons_file|
+
+      @rvdata2_data.each_with_index do |weapon, i|
+        next if weapon.nil?
+
+        weapons_file.write("Weapon #{i}\n")
+        weapons_file.write("Name = #{textualize(weapon.name)}\n")
+        weapons_file.write("Description = #{textualize(weapon.description)}\n")
+        weapons_file.write("Note = #{textualize(weapon.note)}\n\n")
+      end
+
+    end
+
+  end
+
+  # Array of RPG::Armor class instances
+  def decompile_armors
+
+    File.open(join(@output_path, 'Armors.txt'), 'w:UTF-8') do |armors_file|
+
+      @rvdata2_data.each_with_index do |armor, i|
+        next if armor.nil?
+
+        armors_file.write("Armor #{i}\n")
+        armors_file.write("Name = #{textualize(armor.name)}\n")
+        armors_file.write("Description = #{textualize(armor.description)}\n")
+        armors_file.write("Note = #{textualize(armor.note)}\n\n")
       end
 
     end

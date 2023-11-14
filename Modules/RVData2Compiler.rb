@@ -1,91 +1,109 @@
+require 'fileutils'
+
 class RVData2Compiler
 
   def initialize
-    @output_path = ''
+    @input_path = ''
     @metadata = []
   end
 
-  attr_accessor :output_path
+  attr_accessor :input_path
   attr_accessor :metadata
 
-  def compile(decompiled_path, output_path = 'Compiled', target_basename = '')
-    metadata_path = join(decompiled_path, 'Metadata')
-    @output_path = output_path
+  def compile(game_path, input_path='', output_path='', target_basename='')
+    game_data_path = join(game_path, 'Data')
 
-    Dir.foreach(metadata_path) do |filename|
-      next if %w[. ..].include?(filename) || File.directory?(join(metadata_path, filename))
+    if input_path.empty?
+      @input_path = "Decompiled"
+    else
+      @input_path = input_path
+    end
+
+    if output_path.empty?
+      output_path = game_data_path
+    else
+      FileUtils.mkdir_p(output_path) unless Dir.exist?(output_path)
+    end
+
+    Dir.foreach(game_data_path) do |filename|
+      next if %w[. ..].include?(filename) || File.directory?(join(game_data_path, filename))
 
       file_basename = File.basename(filename, '.*')
       next unless SUPPORTED_FORMATS.any? { |s| file_basename.include?(s) }
 
-      if target_basename != ''
+      unless target_basename.empty?
         next unless file_basename.include?(target_basename)
       end
 
-      print "#{RED_COLOR}Compiling #{file_basename}.rvdata2...\n#{RESET_COLOR}"
+      print "#{RED_COLOR}Compiling #{filename}...\n#{RESET_COLOR}"
       $stdout.flush
 
-      File.open("#{metadata_path}/#{filename}", "rb") do |metadata_file|
-        @metadata = Marshal.load(metadata_file.read)
+      File.open(join(game_data_path, filename), "rb") do |rvdata2_file|
+        @metadata = Marshal.load(rvdata2_file.read)
       end
 
-      Dir.mkdir(@output_path) unless Dir.exist?(@output_path)
       case file_basename
 
       when 'Actors'
-        self.compile_actors(decompiled_path)
+        self.compile_actors
 
       when 'Classes'
-        self.compile_classes(decompiled_path)
+        self.compile_classes
 
       when 'CommonEvents'
-        self.compile_common_events(decompiled_path)
+        self.compile_common_events
 
       when 'Enemies'
-        self.compile_enemies(decompiled_path)
+        self.compile_enemies
 
       when 'Items'
-        self.compile_items(decompiled_path)
+        self.compile_items
 
       when 'MapInfos'
-        self.compile_map_infos(decompiled_path)
+        self.compile_map_infos
 
       when 'Scripts'
-        self.compile_scripts(decompiled_path)
+        self.compile_scripts
 
       when 'Skills'
-        self.compile_skills(decompiled_path)
+        self.compile_skills
 
       when 'States'
-        self.compile_states(decompiled_path)
+        self.compile_states
 
       when 'System'
-        self.compile_system(decompiled_path)
+        self.compile_system
 
       when 'Troops'
-        self.compile_troops(decompiled_path)
+        self.compile_troops
+
+      when 'Weapons'
+        self.compile_weapons
+
+      when 'Armors'
+        self.compile_armors
 
       else
 
         if file_basename.match(/\AMap\d+\z/)
-          self.compile_map(decompiled_path, file_basename)
+          self.compile_map(file_basename)
         end
 
       end
 
-      File.open("#{@output_path}/#{file_basename}.rvdata2", "wb") do |rvdata2_file|
+      File.open(join(output_path, filename), "wb") do |rvdata2_file|
         rvdata2_file.write(Marshal.dump(@metadata))
       end
 
-      print "#{GREEN_COLOR}Compiled #{file_basename}.rvdata2\n#{RESET_COLOR}"
+      print "#{GREEN_COLOR}Compiled #{filename}\n#{RESET_COLOR}"
       $stdout.flush
     end
 
   end
 
-  def compile_actors(path)
+  def compile_actors
 
-    File.open(join(path, 'Actors.txt'), 'r:UTF-8') do |actors_file|
+    File.open(join(@input_path, 'Actors.txt'), 'r:UTF-8') do |actors_file|
       ind = 0
 
       actors_file.each_line do |line|
@@ -115,9 +133,9 @@ class RVData2Compiler
 
   end
 
-  def compile_classes(path)
+  def compile_classes
 
-    File.open(join(path, 'Classes.txt'), 'r:UTF-8') do |classes_file|
+    File.open(join(@input_path, 'Classes.txt'), 'r:UTF-8') do |classes_file|
       ind = 0
 
       classes_file.each_line do |line|
@@ -141,13 +159,13 @@ class RVData2Compiler
 
   end
 
-  def compile_common_events(path)
+  def compile_common_events
     event_ind = 0
 
-    Dir.foreach(join(path, 'CommonEvents')) do |common_event_filename|
+    Dir.foreach(join(@input_path, 'CommonEvents')) do |common_event_filename|
       next if %w[. ..].include?(common_event_filename)
 
-      File.open(join(path, 'CommonEvents', common_event_filename), 'r:UTF-8') do |common_event_file|
+      File.open(join(@input_path, 'CommonEvents', common_event_filename), 'r:UTF-8') do |common_event_file|
 
         common_event_file.each_line do |line|
 
@@ -158,10 +176,11 @@ class RVData2Compiler
           when /^Name = (".*")/
             @metadata[event_ind].name = eval($1.to_s)
 
-          when /(\d+)-\D+?\((.*)\)/
-            parameters = eval($2.to_s)
+          when /(\d+)-(\D+?)\((.*)\)/
+            parameters = eval($3.to_s)
             deserialize_parameters(parameters)
 
+            @metadata[event_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
             @metadata[event_ind].list[$1.to_i].parameters = parameters
 
           else
@@ -177,9 +196,9 @@ class RVData2Compiler
 
   end
 
-  def compile_enemies(path)
+  def compile_enemies
 
-    File.open(join(path, 'Enemies.txt'), 'r:UTF-8') do |enemies_file|
+    File.open(join(@input_path, 'Enemies.txt'), 'r:UTF-8') do |enemies_file|
       ind = 0
 
       enemies_file.each_line do |line|
@@ -205,15 +224,69 @@ class RVData2Compiler
 
   end
 
-  def compile_items(path)
+  def compile_items
 
-    File.open(join(path, 'Items.txt'), 'r:UTF-8') do |items_file|
+    File.open(join(@input_path, 'Items.txt'), 'r:UTF-8') do |items_file|
       ind = 0
 
       items_file.each_line do |line|
 
         case line
         when /^Item (\d+)/
+          ind = $1.to_i
+        when /^Name = (".*")/
+          @metadata[ind].name = eval($1.to_s)
+        when /^Description = (".*")/
+          @metadata[ind].description = eval($1.to_s)
+        when /^Note = (".*")/
+          @metadata[ind].note = eval($1.to_s)
+        else
+          next
+
+        end
+
+      end
+
+    end
+
+  end
+
+  def compile_weapons
+
+    File.open(join(@input_path, 'Weapons.txt'), 'r:UTF-8') do |weapons_file|
+      ind = 0
+
+      weapons_file.each_line do |line|
+
+        case line
+        when /^Weapon (\d+)/
+          ind = $1.to_i
+        when /^Name = (".*")/
+          @metadata[ind].name = eval($1.to_s)
+        when /^Description = (".*")/
+          @metadata[ind].description = eval($1.to_s)
+        when /^Note = (".*")/
+          @metadata[ind].note = eval($1.to_s)
+        else
+          next
+
+        end
+
+      end
+
+    end
+
+  end
+
+  def compile_armors
+
+    File.open(join(@input_path, 'Armors.txt'), 'r:UTF-8') do |armors_file|
+      ind = 0
+
+      armors_file.each_line do |line|
+
+        case line
+        when /^Armor (\d+)/
           ind = $1.to_i
         when /^Name = (".*")/
           @metadata[ind].name = eval($1.to_s)
@@ -231,11 +304,11 @@ class RVData2Compiler
 
   end
 
-  def compile_map(path, file_basename)
+  def compile_map(file_basename)
     event_ind = 0
     page_ind = 0
 
-    File.open(join(path, 'Maps', "#{file_basename}.txt"), 'r:UTF-8') do |map_file|
+    File.open(join(@input_path, 'Maps', "#{file_basename}.txt"), 'r:UTF-8') do |map_file|
 
       map_file.each_line do |line|
 
@@ -250,10 +323,11 @@ class RVData2Compiler
           event_ind = $1.to_i
         when /Page (\d+)/
           page_ind = $1.to_i
-        when /(\d+)-\D+?\((.*)\)/
-          parameters = eval($2.to_s)
+        when /(\d+)-(\D+?)\((.*)\)/
+          parameters = eval($3.to_s)
           deserialize_parameters(parameters)
 
+          @metadata.events[event_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
           @metadata.events[event_ind].pages[page_ind].list[$1.to_i].parameters = parameters
         else
           next
@@ -266,9 +340,9 @@ class RVData2Compiler
 
   end
 
-  def compile_map_infos(path)
+  def compile_map_infos
 
-    File.open(join(path, 'MapInfos.txt'), 'r:UTF-8') do |map_infos_file|
+    File.open(join(@input_path, 'MapInfos.txt'), 'r:UTF-8') do |map_infos_file|
       id = 0
 
       map_infos_file.each_line do |line|
@@ -288,10 +362,10 @@ class RVData2Compiler
 
   end
 
-  def compile_scripts(path)
+  def compile_scripts
 
     @metadata.each_with_index  do |script, i|
-      script_path =  join(path, 'Scripts', "#{i} - #{File.basename(script[1])}.rb")
+      script_path =  join(@input_path, 'Scripts', "#{i} - #{File.basename(script[1])}.rb")
 
       File.open(script_path, 'rb') do |script_file|
         script << Zlib::Deflate.deflate(script_file.read)
@@ -301,9 +375,9 @@ class RVData2Compiler
 
   end
 
-  def compile_skills(path)
+  def compile_skills
 
-    File.open(join(path, 'Skills.txt'), 'r:UTF-8') do |skills_file|
+    File.open(join(@input_path, 'Skills.txt'), 'r:UTF-8') do |skills_file|
       ind = 0
 
       skills_file.each_line do |line|
@@ -331,9 +405,9 @@ class RVData2Compiler
 
   end
 
-  def compile_states(path)
+  def compile_states
 
-    File.open(join(path, 'States.txt'), 'r:UTF-8') do |states_file|
+    File.open(join(@input_path, 'States.txt'), 'r:UTF-8') do |states_file|
       ind = 0
 
       states_file.each_line do |line|
@@ -365,9 +439,9 @@ class RVData2Compiler
 
   end
 
-  def compile_system(path)
+  def compile_system
 
-    File.open(join(path, 'System.txt'), 'r:UTF-8') do |system_file|
+    File.open(join(@input_path, 'System.txt'), 'r:UTF-8') do |system_file|
 
       system_file.each_line do |line|
 
@@ -394,7 +468,7 @@ class RVData2Compiler
 
     end
 
-    File.open(join(path, 'System', 'Elements.txt'), 'r:UTF-8') do |elements_file|
+    File.open(join(@input_path, 'System', 'Elements.txt'), 'r:UTF-8') do |elements_file|
       offset = @metadata.elements[0].nil? ? 1 : 0
 
       elements_file.each_line.with_index do |line, i|
@@ -403,7 +477,7 @@ class RVData2Compiler
 
     end
 
-    File.open(join(path, 'System', 'Skill Types.txt'), 'r:UTF-8') do |skill_types_file|
+    File.open(join(@input_path, 'System', 'Skill Types.txt'), 'r:UTF-8') do |skill_types_file|
       offset = @metadata.skill_types[0].nil? ? 1 : 0
 
       skill_types_file.each_line.with_index do |line, i|
@@ -412,7 +486,7 @@ class RVData2Compiler
 
     end
 
-    File.open(join(path, 'System', 'Weapon Types.txt'), 'r:UTF-8') do |weapon_types_file|
+    File.open(join(@input_path, 'System', 'Weapon Types.txt'), 'r:UTF-8') do |weapon_types_file|
       offset = @metadata.weapon_types[0].nil? ? 1 : 0
 
       weapon_types_file.each_line.with_index do |line, i|
@@ -421,7 +495,7 @@ class RVData2Compiler
 
     end
 
-    File.open(join(path, 'System', 'Armor Types.txt'), 'r:UTF-8') do |armor_types_file|
+    File.open(join(@input_path, 'System', 'Armor Types.txt'), 'r:UTF-8') do |armor_types_file|
       offset = @metadata.armor_types[0].nil? ? 1 : 0
 
       armor_types_file.each_line.with_index do |line, i|
@@ -430,7 +504,7 @@ class RVData2Compiler
 
     end
 
-    File.open(join(path, 'System', 'Switches.txt'), 'r:UTF-8') do |switches_file|
+    File.open(join(@input_path, 'System', 'Switches.txt'), 'r:UTF-8') do |switches_file|
       offset = @metadata.switches[0].nil? ? 1 : 0
 
       switches_file.each_line.with_index do |line, i|
@@ -439,7 +513,7 @@ class RVData2Compiler
 
     end
 
-    File.open(join(path, 'System', 'Variables.txt'), 'r:UTF-8') do |variables_file|
+    File.open(join(@input_path, 'System', 'Variables.txt'), 'r:UTF-8') do |variables_file|
       offset = @metadata.variables[0].nil? ? 1 : 0
 
       variables_file.each_line.with_index do |line, i|
@@ -448,7 +522,7 @@ class RVData2Compiler
 
     end
 
-    File.open(join(path, 'System', 'Terms.txt'), 'r:UTF-8') do |terms_file|
+    File.open(join(@input_path, 'System', 'Terms.txt'), 'r:UTF-8') do |terms_file|
       values = []
 
       terms_file.each_line do |line|
@@ -465,9 +539,9 @@ class RVData2Compiler
 
   end
 
-  def compile_troops(path)
+  def compile_troops
 
-    File.open(join(path, 'Troops.txt'), 'r:UTF-8') do |troops_file|
+    File.open(join(@input_path, 'Troops.txt'), 'r:UTF-8') do |troops_file|
       troop_ind = 0
       page_ind = 0
 
@@ -480,10 +554,11 @@ class RVData2Compiler
           @metadata[troop_ind].name = eval($1.to_s)
         when /Page (\d+)/
           page_ind = $1.to_i
-        when /(\d+)-\D+?\((.*)\)/
-          parameters = eval($2.to_s)
+        when /(\d+)-(\D+?)\((.*)\)/
+          parameters = eval($3.to_s)
           deserialize_parameters(parameters)
 
+          @metadata[troop_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
           @metadata[troop_ind].pages[page_ind].list[$1.to_i].parameters = parameters
         else
           next

@@ -7,10 +7,13 @@ require 'zlib'
 
 $stdout.sync = true
 
-USAGE = "#{RED_COLOR}Usage: RPGMakerVXAceTranslator.rb -d GAME_DIR|-c DECOMPILED_DIR -o OUTPUT#{RESET_COLOR}"
+USAGE = "#{RED_COLOR}Decompiler Usage: RPGMakerVXAceTranslator.rb -d GAME_DIR -o OUTPUT_DIR [Optional]
+Compiler Usage: RPGMakerVXAceTranslator.rb -c GAME_DIR -i INPUT_DIR [Optional] -o OUTPUT_DIR [Optional]#{RESET_COLOR}"
 
 options = {}
 options[:target_basename] = ''
+options[:input] = ''
+options[:output] = ''
 
 while (arg = ARGV.shift)
 
@@ -21,6 +24,8 @@ while (arg = ARGV.shift)
     options[:compile] = ARGV.shift
   when '-t', '--target'
     options[:target_basename] = ARGV.shift
+  when '-i', '--input'
+    options[:input] = ARGV.shift
   when '-o', '--output'
     options[:output] = ARGV.shift
   when '-h', '--help'
@@ -42,23 +47,16 @@ unless options[:decompile] || options[:compile]
   exit
 end
 
+Dir.chdir(File.dirname(__FILE__))
 
 if not options[:decompile].nil?
   d = RVData2Decompiler.new
+  d.decompile(options[:decompile], output_path=options[:output], target_basename=options[:target_basename])
 
-  if options[:output].nil?
-    d.decompile(options[:decompile], target_basename=options[:target_basename])
-  else
-    d.decompile(options[:decompile], options[:output], target_basename=options[:target_basename])
-  end
 
 elsif not options[:compile].nil?
   c = RVData2Compiler.new
+  c.compile(options[:compile], input_path=options[:input], output_path=options[:output], target_basename=options[:target_basename])
 
-  if options[:output].nil?
-    c.compile(options[:compile], target_basename=options[:target_basename])
-  else
-    c.compile(options[:compile], options[:output], target_basename=options[:target_basename])
-  end
 
 end

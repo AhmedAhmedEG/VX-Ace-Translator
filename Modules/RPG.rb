@@ -256,6 +256,46 @@ module RPG
     attr_accessor :value2
   end
 
+  class RPG::EquipItem < RPG::BaseItem
+    def initialize
+      super
+      @price = 0
+      @etype_id = 0
+      @params = [0] * 8
+    end
+    attr_accessor :price
+    attr_accessor :etype_id
+    attr_accessor :params
+  end
+
+  class RPG::Weapon < RPG::EquipItem
+    def initialize
+      super
+      @wtype_id = 0
+      @animation_id = 0
+      @features.push(RPG::BaseItem::Feature.new(31, 1, 0))
+      @features.push(RPG::BaseItem::Feature.new(22, 0, 0))
+    end
+    def performance
+      params[2] + params[4] + params.inject(0) {|r, v| r += v }
+    end
+    attr_accessor :wtype_id
+    attr_accessor :animation_id
+  end
+
+  class RPG::Armor < RPG::EquipItem
+    def initialize
+      super
+      @atype_id = 0
+      @etype_id = 1
+      @features.push(RPG::BaseItem::Feature.new(22, 1, 0))
+    end
+    def performance
+      params[3] + params[5] + params.inject(0) {|r, v| r += v }
+    end
+    attr_accessor :atype_id
+  end
+
   class RPG::Item < RPG::UsableItem
     def initialize
       super
