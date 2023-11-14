@@ -14,9 +14,6 @@ defaults that folder as input.
 -Decompiler will not produce metadata files anymore, reducing output size, and increasing the compilation speed significantly.
 -Now the decompiler will auto create the output folder including parents if does not exists.
 -Added auto decryption to encrypted games.
-
-
-[Minor]
 -Added support for Weapons.rvdata2
 -Added support for Armors.rvdata2
 
