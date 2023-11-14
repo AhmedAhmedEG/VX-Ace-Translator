@@ -8,7 +8,7 @@ Call the VXAceTranslator.exe file with the following arguments:-
 
 ```Compiler Usage: RPGMakerVXAceTranslator.exe -c GAME_DIR -i INPUT_DIR [Optional] -o OUTPUT_DIR [Optional]```
 
-You can optionally add (-t TARGET_FILESNAME) in case you want to decompile/compile spacific files, only files that include that target in it's basename will be proccessed.
+You can optionally add (-t TARGET_FILENAME) in case you want to decompile/compile spacific files, only files that include that target filename in it's basename will be proccessed.
 
 # Examples
 Example 1:-
@@ -28,6 +28,11 @@ Example 3:-
 ```Decompiling: VXAceTranslator.exe -d path/to/game -t Map001```
   
 ```Compiling: VXAceTranslator.exe -c path/to/game -t Map001```
+
+# Supported Event Commands
+It supports all event commands excluding only two, 505 (Unnammed) and 205 (SetMoveRoute).
+
+`["Empty", "ShowTextAttributes", "ShowChoices", "InputNumber", "SelectKeyItem", "ShowScrollingTextAttributes", "Comment", "ConditionalBranch", "Loop", "BreakLoop", "ExitEventProcessing", "CallCommonEvent", "Label", "JumpToLabel", "ControlSwitches", "ControlVariables", "ControlSelfSwitch", "ControlTimer", "ChangeGold", "ChangeItems", "ChangeWeapons", "ChangeArmor", "ChangePartyMember", "ChangeBattleBGM", "ChangeBattleEndME", "ChangeSaveAccess", "ChangeMenuAccess", "ChangeEncounter", "ChangeFormationAccess", "ChangeWindowColor", "TransferPlayer", "SetVehicleLocation", "SetEventLocation", "ScrollMap", "GetSwitchVehicle", "ChangeTransparency", "ShowAnimation", "ShotBalloonIcon", "EraseEvent", "ChangePlayerFollowers", "GatherFollowers", "FadeoutScreen", "FadeinScreen", "TintScreen", "FlashScreen", "ShakeScreen", "Wait", "ShowPicture", "MovePicture", "RotatePicture", "TintPicture", "ErasePicture", "SetWeatherEffects", "PlayBGM", "FadeoutBGM", "SaveBGM", "ReplayBGM", "PlayBGS", "FadeoutBGS", "PlayME", "PlaySE", "StopSE", "PlayMovie", "ChangeMapDisplay", "ChangeTileset", "ChangeBattleBack", "ChangeParallaxBack", "GetLocationInfo", "BattleProcessing", "ShopProcessing", "NameInputProcessing", "ChangeHP", "ChangeMP", "ChangeState", "RecoverAll", "ChangeEXP", "ChangeLevel", "ChangeParameters", "ChangeSkills", "ChangeEquipment", "ChangeActorName", "ChangeActorClass", "ChangeActorGraphic", "ChangeVehicleGraphic", "ChangeActorNickname", "ChangeEnemyHP", "ChangeEnemyMP", "ChangeEnemyState", "EnemyRecoverAll", "EnemyAppear", "EnemyTransform", "ShowBattleAnimation", "ForceAction", "AbortBattle", "OpenMenuScreen", "OpenSaveScreen", "GameOver", "ReturnToTitleScreen", "Script", "ShowText", "When", "WhenCancel", "ChoicesEnd", "ShowScrollingText", "CommentMore", "Else", "BranchEnd", "RepeatAbove", "IfWin", "IfEscape", "IfLose", "BattleProcessingEnd", "ShopItem", "ScriptMore"]`
 
 # How To Build
 1- Make sure you have Ruby v2.7.8, any version higher than that have a different formate for marshaled files, and it's not compatible with the engine.
