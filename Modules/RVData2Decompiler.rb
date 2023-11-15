@@ -23,7 +23,9 @@ class RVData2Decompiler
         File.rename(rgss3a_path + '.old', rgss3a_path)
       end
 
-      system("#{join('Resources', 'Tools', 'RPGMakerDecrypter.exe')} \"#{rgss3a_path}\"")
+      decrypter_path =  join('Resources', 'Tools', 'RPGMakerDecrypter.exe')
+
+      system("\"#{decrypter_path}\" \"#{rgss3a_path}\"")
       File.rename(rgss3a_path, rgss3a_path + '.old')
     end
 
