@@ -1,1 +1,0 @@
-"Modules/Ocra/bin/ocra.rb" VXAceTranslator.rb --no-autoload --console --icon "Resources/Icons/Icon.ico" --dll ruby_builtin_dlls/libgmp-10.dll --dll ruby_builtin_dlls/zlib1.dll --output "Build/VXAceTranslator.exe"
