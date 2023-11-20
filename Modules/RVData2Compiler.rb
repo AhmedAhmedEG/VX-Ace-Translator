@@ -1,18 +1,22 @@
 require 'fileutils'
+require_relative 'RPG'
 
 class RVData2Compiler
 
   def initialize
     @input_path = ''
-    @metadata = []
+    @rvdata2_data = []
+    @indentation = ' ' * 2
   end
 
   attr_accessor :input_path
-  attr_accessor :metadata
+  attr_accessor :rvdata2_data
+  attr_accessor :indentation
 
   def compile(game_path, input_path='', output_path='', target_basename='')
     game_data_path = join(game_path, 'Data')
 
+    decrypt_game(game_path)
     if input_path.empty?
       @input_path = "Decompiled"
     else
@@ -35,11 +39,11 @@ class RVData2Compiler
         next unless file_basename.include?(target_basename)
       end
 
-      print "#{RED_COLOR}Compiling #{filename}...\n#{RESET_COLOR}"
+      print "\n#{RED_COLOR}Compiling #{filename}...#{RESET_COLOR}\n"
       $stdout.flush
 
       File.open(join(game_data_path, filename), "rb") do |rvdata2_file|
-        @metadata = Marshal.load(rvdata2_file.read)
+        @rvdata2_data = Marshal.load(rvdata2_file.read)
       end
 
       case file_basename
@@ -92,10 +96,10 @@ class RVData2Compiler
       end
 
       File.open(join(output_path, filename), "wb") do |rvdata2_file|
-        rvdata2_file.write(Marshal.dump(@metadata))
+        rvdata2_file.write(Marshal.dump(@rvdata2_data))
       end
 
-      print "#{GREEN_COLOR}Compiled #{filename}\n#{RESET_COLOR}"
+      print "#{GREEN_COLOR}Compiled #{filename}#{RESET_COLOR}\n"
       $stdout.flush
     end
 
@@ -112,17 +116,17 @@ class RVData2Compiler
         when /^Actor (\d+)/
           ind = $1.to_i
         when /^Nickname = (".*")/
-          @metadata[ind].nickname = eval($1.to_s)
+          @rvdata2_data[ind].nickname = eval($1.to_s)
         when /^Character Name = (".*")/
-          @metadata[ind].character_name = eval($1.to_s)
+          @rvdata2_data[ind].character_name = eval($1.to_s)
         when /^Face Name = (".*")/
-          @metadata[ind].face_name = eval($1.to_s)
+          @rvdata2_data[ind].face_name = eval($1.to_s)
         when /^Name = (".*")/
-          @metadata[ind].name = eval($1.to_s)
+          @rvdata2_data[ind].name = eval($1.to_s)
         when /^Description = (".*")/
-          @metadata[ind].description = eval($1.to_s)
+          @rvdata2_data[ind].description = eval($1.to_s)
         when /^Note = (".*")/
-          @metadata[ind].note = eval($1.to_s)
+          @rvdata2_data[ind].note = eval($1.to_s)
         else
           next
         end
@@ -144,11 +148,11 @@ class RVData2Compiler
         when /^Class (\d+)/
           ind = $1.to_i
         when /^Name = (".*")/
-          @metadata[ind].name = eval($1.to_s)
+          @rvdata2_data[ind].name = eval($1.to_s)
         when /^Description = (".*")/
-          @metadata[ind].description = eval($1.to_s)
+          @rvdata2_data[ind].description = eval($1.to_s)
         when /^Note = (".*")/
-          @metadata[ind].note = eval($1.to_s)
+          @rvdata2_data[ind].note = eval($1.to_s)
         else
           next
         end
@@ -166,6 +170,7 @@ class RVData2Compiler
       next if %w[. ..].include?(common_event_filename)
 
       File.open(join(@input_path, 'CommonEvents', common_event_filename), 'r:UTF-8') do |common_event_file|
+        added_event_commands = {}
 
         common_event_file.each_line do |line|
 
@@ -174,20 +179,39 @@ class RVData2Compiler
             event_ind = $1.to_i
 
           when /^Name = (".*")/
-            @metadata[event_ind].name = eval($1.to_s)
+            @rvdata2_data[event_ind].name = eval($1.to_s)
+
+          when /(\s*)(\d+)-(\D+?)\((.*)\)\+$/
+            indent = $1.length.to_i / @indentation.length.to_i
+            event_command = RPG::EventCommand.new(code=TARGETED_EVENT_COMMANDS.key($3), indent=indent - 1, parameters=eval($4.to_s))
+            added_event_commands[$2.to_i] = event_command
 
           when /(\d+)-(\D+?)\((.*)\)/
             parameters = eval($3.to_s)
             deserialize_parameters(parameters)
 
-            @metadata[event_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
-            @metadata[event_ind].list[$1.to_i].parameters = parameters
+            begin
+              @rvdata2_data[event_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
+            rescue NoMethodError => e
+              puts "Unknown Command at Event #{event_ind}, Command #{$1}, #{$2}"
+            end
+
+            if $2 == 'ShowText' && parameters[0].empty?
+              @rvdata2_data[event_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key('Empty')
+              parameters.clear
+            end
+
+            @rvdata2_data[event_ind].list[$1.to_i].parameters = parameters
 
           else
             next
 
           end
 
+        end
+
+        added_event_commands.keys.sort.reverse.each do |ind|
+          @rvdata2_data[event_ind].list.insert(ind, added_event_commands[ind])
         end
 
       end
@@ -207,13 +231,13 @@ class RVData2Compiler
         when /^Enemy (\d+)/
           ind = $1.to_i
         when /^Battler Name = (".*")/
-          @metadata[ind].battler_name = eval($1.to_s)
+          @rvdata2_data[ind].battler_name = eval($1.to_s)
         when /^Name = (".*")/
-          @metadata[ind].name = eval($1.to_s)
+          @rvdata2_data[ind].name = eval($1.to_s)
         when /^Description = (".*")/
-          @metadata[ind].description = eval($1.to_s)
+          @rvdata2_data[ind].description = eval($1.to_s)
         when /^Note = (".*")/
-          @metadata[ind].note = eval($1.to_s)
+          @rvdata2_data[ind].note = eval($1.to_s)
         else
           next
         end
@@ -235,11 +259,11 @@ class RVData2Compiler
         when /^Item (\d+)/
           ind = $1.to_i
         when /^Name = (".*")/
-          @metadata[ind].name = eval($1.to_s)
+          @rvdata2_data[ind].name = eval($1.to_s)
         when /^Description = (".*")/
-          @metadata[ind].description = eval($1.to_s)
+          @rvdata2_data[ind].description = eval($1.to_s)
         when /^Note = (".*")/
-          @metadata[ind].note = eval($1.to_s)
+          @rvdata2_data[ind].note = eval($1.to_s)
         else
           next
 
@@ -262,11 +286,11 @@ class RVData2Compiler
         when /^Weapon (\d+)/
           ind = $1.to_i
         when /^Name = (".*")/
-          @metadata[ind].name = eval($1.to_s)
+          @rvdata2_data[ind].name = eval($1.to_s)
         when /^Description = (".*")/
-          @metadata[ind].description = eval($1.to_s)
+          @rvdata2_data[ind].description = eval($1.to_s)
         when /^Note = (".*")/
-          @metadata[ind].note = eval($1.to_s)
+          @rvdata2_data[ind].note = eval($1.to_s)
         else
           next
 
@@ -289,11 +313,11 @@ class RVData2Compiler
         when /^Armor (\d+)/
           ind = $1.to_i
         when /^Name = (".*")/
-          @metadata[ind].name = eval($1.to_s)
+          @rvdata2_data[ind].name = eval($1.to_s)
         when /^Description = (".*")/
-          @metadata[ind].description = eval($1.to_s)
+          @rvdata2_data[ind].description = eval($1.to_s)
         when /^Note = (".*")/
-          @metadata[ind].note = eval($1.to_s)
+          @rvdata2_data[ind].note = eval($1.to_s)
         else
           next
         end
@@ -309,28 +333,61 @@ class RVData2Compiler
     page_ind = 0
 
     File.open(join(@input_path, 'Maps', "#{file_basename}.txt"), 'r:UTF-8') do |map_file|
+      added_event_commands = {}
 
       map_file.each_line do |line|
 
         case line
         when /^Display Name = (".*")/
-          @metadata.display_name = eval($1.to_s)
+          @rvdata2_data.display_name = eval($1.to_s)
+
         when /^Parallax Name = (".*")/
-          @metadata.parallax_name = eval($1.to_s)
+          @rvdata2_data.parallax_name = eval($1.to_s)
+
         when /^Note = (".*")/
-          @metadata.note = eval($1.to_s)
+          @rvdata2_data.note = eval($1.to_s)
+
         when /^CommonEvent (\d+)/
           event_ind = $1.to_i
+
         when /Page (\d+)/
           page_ind = $1.to_i
+
+        when /(\s*)(\d+)-(\D+?)\((.*)\)\+$/
+          indent = $1.length.to_i / @indentation.length.to_i
+          event_command = RPG::EventCommand.new(code=TARGETED_EVENT_COMMANDS.key($3), indent=indent - 2, parameters=eval($4.to_s))
+          added_event_commands[event_ind] = {page_ind => {$2.to_i => event_command}}
+
         when /(\d+)-(\D+?)\((.*)\)/
           parameters = eval($3.to_s)
           deserialize_parameters(parameters)
 
-          @metadata.events[event_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
-          @metadata.events[event_ind].pages[page_ind].list[$1.to_i].parameters = parameters
+          begin
+            @rvdata2_data.events[event_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
+          rescue NoMethodError => e
+            puts "Unknown Command at Event #{event_ind}, Page #{page_ind}, Command #{$1}, #{$2}"
+          end
+
+          if $2 == 'ShowText' && parameters[0].empty?
+            @rvdata2_data.events[event_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key('Empty')
+            parameters.clear
+          end
+
+          @rvdata2_data.events[event_ind].pages[page_ind].list[$1.to_i].parameters = parameters
         else
           next
+
+        end
+
+      end
+
+      added_event_commands.keys.each do |event_ind|
+
+        added_event_commands[event_ind].keys.each do |page_ind|
+
+          added_event_commands[event_ind][page_ind].keys.sort.reverse.each do |i|
+            @rvdata2_data.events[event_ind].pages[page_ind].list.insert(i, added_event_commands[event_ind][page_ind][i])
+          end
 
         end
 
@@ -351,7 +408,7 @@ class RVData2Compiler
         when /^MapInfo (\d+)/
           id = $1.to_i
         when /^Name = (".*")/
-          @metadata[id].name = eval($1.to_s)
+          @rvdata2_data[id].name = eval($1.to_s)
         else
           next
         end
@@ -364,7 +421,7 @@ class RVData2Compiler
 
   def compile_scripts
 
-    @metadata.each_with_index  do |script, i|
+    @rvdata2_data.each_with_index  do |script, i|
       script_path =  join(@input_path, 'Scripts', "#{i} - #{File.basename(script[1])}.rb")
 
       File.open(script_path, 'rb') do |script_file|
@@ -386,15 +443,15 @@ class RVData2Compiler
         when /^Skill (\d+)/
           ind = $1.to_i
         when /^Message 1 = (".*")/
-          @metadata[ind].message1 = eval($1.to_s)
+          @rvdata2_data[ind].message1 = eval($1.to_s)
         when /^Message 2 = (".*")/
-          @metadata[ind].message2 = eval($1.to_s)
+          @rvdata2_data[ind].message2 = eval($1.to_s)
         when /^Name = (".*")/
-          @metadata[ind].name = eval($1.to_s)
+          @rvdata2_data[ind].name = eval($1.to_s)
         when /^Description = (".*")/
-          @metadata[ind].description = eval($1.to_s)
+          @rvdata2_data[ind].description = eval($1.to_s)
         when /^Note = (".*")/
-          @metadata[ind].note = eval($1.to_s)
+          @rvdata2_data[ind].note = eval($1.to_s)
         else
           next
         end
@@ -416,19 +473,19 @@ class RVData2Compiler
         when /^State (\d+)/
           ind = $1.to_i
         when /^Message 1 = (".*")/
-          @metadata[ind].message1 = eval($1.to_s)
+          @rvdata2_data[ind].message1 = eval($1.to_s)
         when /^Message 2 = (".*")/
-          @metadata[ind].message2 = eval($1.to_s)
+          @rvdata2_data[ind].message2 = eval($1.to_s)
         when /^Message 3 = (".*")/
-          @metadata[ind].message3 = eval($1.to_s)
+          @rvdata2_data[ind].message3 = eval($1.to_s)
         when /^Message 4 = (".*")/
-          @metadata[ind].message4 = eval($1.to_s)
+          @rvdata2_data[ind].message4 = eval($1.to_s)
         when /^Name = (".*")/
-          @metadata[ind].name = eval($1.to_s)
+          @rvdata2_data[ind].name = eval($1.to_s)
         when /^Description = (".*")/
-          @metadata[ind].description = eval($1.to_s)
+          @rvdata2_data[ind].description = eval($1.to_s)
         when /^Note = (".*")/
-          @metadata[ind].note = eval($1.to_s)
+          @rvdata2_data[ind].note = eval($1.to_s)
         else
           next
         end
@@ -447,19 +504,19 @@ class RVData2Compiler
 
         case line
         when /^Game Title = (".*")/
-          @metadata.game_title = eval($1.to_s)
+          @rvdata2_data.game_title = eval($1.to_s)
         when /^Currency Unit = (".*")/
-          @metadata.currency_unit = eval($1.to_s)
+          @rvdata2_data.currency_unit = eval($1.to_s)
         when /^Title 1 Name = (".*")/
-          @metadata.title1_name = eval($1.to_s)
+          @rvdata2_data.title1_name = eval($1.to_s)
         when /^Title 2 Name = (".*")/
-          @metadata.title2_name = eval($1.to_s)
+          @rvdata2_data.title2_name = eval($1.to_s)
         when /^Battleback 1 Name = (".*")/
-          @metadata.battleback1_name = eval($1.to_s)
+          @rvdata2_data.battleback1_name = eval($1.to_s)
         when /^Battleback 2 Name = (".*")/
-          @metadata.battleback2_name = eval($1.to_s)
+          @rvdata2_data.battleback2_name = eval($1.to_s)
         when /^Battler Name = (".*")/
-          @metadata.battler_name = eval($1.to_s)
+          @rvdata2_data.battler_name = eval($1.to_s)
         else
           next
         end
@@ -469,55 +526,55 @@ class RVData2Compiler
     end
 
     File.open(join(@input_path, 'System', 'Elements.txt'), 'r:UTF-8') do |elements_file|
-      offset = @metadata.elements[0].nil? ? 1 : 0
+      offset = @rvdata2_data.elements[0].nil? ? 1 : 0
 
       elements_file.each_line.with_index do |line, i|
-        @metadata.elements[i + offset] = eval(line.strip)
+        @rvdata2_data.elements[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(@input_path, 'System', 'Skill Types.txt'), 'r:UTF-8') do |skill_types_file|
-      offset = @metadata.skill_types[0].nil? ? 1 : 0
+      offset = @rvdata2_data.skill_types[0].nil? ? 1 : 0
 
       skill_types_file.each_line.with_index do |line, i|
-        @metadata.skill_types[i + offset] = eval(line.strip)
+        @rvdata2_data.skill_types[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(@input_path, 'System', 'Weapon Types.txt'), 'r:UTF-8') do |weapon_types_file|
-      offset = @metadata.weapon_types[0].nil? ? 1 : 0
+      offset = @rvdata2_data.weapon_types[0].nil? ? 1 : 0
 
       weapon_types_file.each_line.with_index do |line, i|
-        @metadata.weapon_types[i + offset] = eval(line.strip)
+        @rvdata2_data.weapon_types[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(@input_path, 'System', 'Armor Types.txt'), 'r:UTF-8') do |armor_types_file|
-      offset = @metadata.armor_types[0].nil? ? 1 : 0
+      offset = @rvdata2_data.armor_types[0].nil? ? 1 : 0
 
       armor_types_file.each_line.with_index do |line, i|
-        @metadata.armor_types[i + offset] = eval(line.strip)
+        @rvdata2_data.armor_types[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(@input_path, 'System', 'Switches.txt'), 'r:UTF-8') do |switches_file|
-      offset = @metadata.switches[0].nil? ? 1 : 0
+      offset = @rvdata2_data.switches[0].nil? ? 1 : 0
 
       switches_file.each_line.with_index do |line, i|
-        @metadata.switches[i + offset] = eval(line.strip)
+        @rvdata2_data.switches[i + offset] = eval(line.strip)
       end
 
     end
 
     File.open(join(@input_path, 'System', 'Variables.txt'), 'r:UTF-8') do |variables_file|
-      offset = @metadata.variables[0].nil? ? 1 : 0
+      offset = @rvdata2_data.variables[0].nil? ? 1 : 0
 
       variables_file.each_line.with_index do |line, i|
-        @metadata.variables[i + offset] = eval(line.strip)
+        @rvdata2_data.variables[i + offset] = eval(line.strip)
       end
 
     end
@@ -530,38 +587,69 @@ class RVData2Compiler
         values << eval(line.strip.split(' = ')[1])
       end
 
-      @metadata.terms.basic = values[0..7]
-      @metadata.terms.params = values[8..15]
-      @metadata.terms.etypes = values[16..20]
-      @metadata.terms.commands = values[21..43]
+      @rvdata2_data.terms.basic = values[0..7]
+      @rvdata2_data.terms.params = values[8..15]
+      @rvdata2_data.terms.etypes = values[16..20]
+      @rvdata2_data.terms.commands = values[21..43]
 
     end
 
   end
 
   def compile_troops
+    troop_ind = 0
+    page_ind = 0
 
     File.open(join(@input_path, 'Troops.txt'), 'r:UTF-8') do |troops_file|
-      troop_ind = 0
-      page_ind = 0
+      added_event_commands = {}
 
       troops_file.each_line do |line|
 
         case line
         when /^Troop (\d+)/
           troop_ind = $1.to_i
+
         when /^Name = (".*")/
-          @metadata[troop_ind].name = eval($1.to_s)
+          @rvdata2_data[troop_ind].name = eval($1.to_s)
+
         when /Page (\d+)/
           page_ind = $1.to_i
+
+        when /(\s*)(\d+)-(\D+?)\((.*)\)\+$/
+          indent = $1.length.to_i / @indentation.length.to_i
+          event_command = RPG::EventCommand.new(code=TARGETED_EVENT_COMMANDS.key($3), indent=indent - 1, parameters=eval($4.to_s))
+          added_event_commands[troop_ind] = {page_ind => {$2.to_i => event_command}}
+
         when /(\d+)-(\D+?)\((.*)\)/
           parameters = eval($3.to_s)
           deserialize_parameters(parameters)
 
-          @metadata[troop_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
-          @metadata[troop_ind].pages[page_ind].list[$1.to_i].parameters = parameters
+          begin
+            @rvdata2_data[troop_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
+          rescue NoMethodError => e
+            puts "Unknown Command at Troop #{troop_ind}, Page #{page_ind}, Command #{$1}, #{$2}"
+          end
+
+          if $2 == 'ShowText' && parameters[0].empty?
+            @rvdata2_data[troop_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key('Empty')
+            parameters.clear
+          end
+
+          @rvdata2_data[troop_ind].pages[page_ind].list[$1.to_i].parameters = parameters
         else
           next
+
+        end
+
+      end
+
+      added_event_commands.keys.each do |troop_ind|
+
+        added_event_commands[troop_ind].keys.each do |page_ind|
+
+          added_event_commands[troop_ind][page_ind].keys.sort.reverse.each do |i|
+            @rvdata2_data[troop_ind].pages[page_ind].list.insert(i, added_event_commands[troop_ind][page_ind][i])
+          end
 
         end
 

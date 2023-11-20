@@ -173,6 +173,24 @@ def deserialize_parameters(parameters)
 
 end
 
+def decrypt_game(game_path)
+  game_data_path = join(game_path, 'Data')
+
+  unless Dir.exist?(game_data_path) && !Dir.empty?(game_data_path)
+    rgss3a_path = join(game_path, 'Game.rgss3a')
+
+    if File.exist?(rgss3a_path + '.old')
+      File.rename(rgss3a_path + '.old', rgss3a_path)
+    end
+
+    decrypter_path =  join('Resources', 'Tools', 'RPGMakerDecrypter.exe')
+
+    system("\"#{decrypter_path}\" \"#{rgss3a_path}\"")
+    File.rename(rgss3a_path, rgss3a_path + '.old')
+  end
+
+end
+
 def join(*paths)
 
   if paths[0].include?('\\')

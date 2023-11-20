@@ -15,20 +15,7 @@ class RVData2Decompiler
   def decompile(game_path, output_path='', target_basename='')
     input_path = join(game_path, 'Data')
 
-    # Decryption handling
-    unless Dir.exist?(input_path) && !Dir.empty?(input_path)
-      rgss3a_path = join(game_path, 'Game.rgss3a')
-
-      if File.exist?(rgss3a_path + '.old')
-        File.rename(rgss3a_path + '.old', rgss3a_path)
-      end
-
-      decrypter_path =  join('Resources', 'Tools', 'RPGMakerDecrypter.exe')
-
-      system("\"#{decrypter_path}\" \"#{rgss3a_path}\"")
-      File.rename(rgss3a_path, rgss3a_path + '.old')
-    end
-
+    decrypt_game(game_path)
     if output_path.empty?
       @output_path = "Decompiled"
     else
@@ -47,7 +34,7 @@ class RVData2Decompiler
         next unless file_basename.include?(target_basename)
       end
 
-      print "#{RED_COLOR}Decompiling #{filename}...\n#{RESET_COLOR}"
+      print "\n#{RED_COLOR}Decompiling #{filename}...#{RESET_COLOR}\n"
       $stdout.flush
 
       File.open(join(input_path, filename), 'rb') do |rvdata2_file|
@@ -104,7 +91,7 @@ class RVData2Decompiler
 
       end
 
-      print "#{GREEN_COLOR}Decompiled #{filename}\n#{RESET_COLOR}"
+      print "#{GREEN_COLOR}Decompiled #{filename}#{RESET_COLOR}\n"
       $stdout.flush
     end
 
@@ -153,31 +140,36 @@ class RVData2Decompiler
   def decompile_common_events
     Dir.mkdir(join(@output_path, 'CommonEvents')) unless Dir.exist?(join(@output_path, 'CommonEvents'))
 
-    last_indentation = 0
     @rvdata2_data.each_with_index do |event, i|
-
       next if event.nil? || event.list.empty?
       common_events_file = StringIO.new('')
 
       common_events_file.write("CommonEvent #{i}\n")
       common_events_file.write("Name = #{textualize(event.name)}\n\n")
 
+      last_indentation = 0
       event.list.each_with_index do |event_command, j|
         event_code = event_command.code
         next unless TARGETED_EVENT_COMMANDS.keys.include?(event_code) && !event_command.parameters.empty?
 
-        serialize_parameters(event_command.parameters)
-        if event_command.indent != last_indentation && event_command.indent == 0
+        if event_command.indent < last_indentation
           common_events_file.write("\n")
         end
 
         last_indentation = event_command.indent
+
+        event_command_name = TARGETED_EVENT_COMMANDS[event_code]
+        if event_command_name == 'ShowText' && event_command.parameters[0].empty?
+          event_command.parameters[0] = ' '
+        end
+
+        serialize_parameters(event_command.parameters)
         common_events_file.write(@indentation * (event_command.indent + 1) +
-                                 "#{j}-#{TARGETED_EVENT_COMMANDS[event_code]}(#{textualize(event_command.parameters)})\n")
+                                 "#{j}-#{event_command_name}(#{textualize(event_command.parameters)})\n")
       end
 
       common_events_file.rewind
-      if common_events_file.each_line.count != 3
+      if common_events_file.each_line.count > 3
 
         File.open(join(@output_path, 'CommonEvents', "CommonEvent#{i}.txt"), 'w:UTF-8') do |o|
           o.write(common_events_file.string)
@@ -264,43 +256,49 @@ class RVData2Decompiler
 
   # Instance of RPG::Map class
   def decompile_map(filename)
-
     Dir.mkdir(join(@output_path, 'Maps')) unless Dir.exist?(join(@output_path, 'Maps'))
+
     File.open(join(@output_path, 'Maps', "#{filename}.txt"), 'w:UTF-8') do |map_file|
       map_file.write("Display Name = #{textualize(@rvdata2_data.display_name)}\n")
       map_file.write("Parallax Name = #{textualize(@rvdata2_data.parallax_name)}\n")
-      map_file.write("Note = #{textualize(@rvdata2_data.note)}\n\n")
+      map_file.write("Note = #{textualize(@rvdata2_data.note)}\n")
 
-      keys = @rvdata2_data.events.keys.sort
-      keys.each_with_index do |key|
-        current_event = key
+      event_keys = @rvdata2_data.events.keys.sort
+      event_keys.each do |event_key|
+        event = @rvdata2_data.events[event_key]
 
-        @rvdata2_data.events[key].pages.each_with_index do |page, i|
-          current_page = i
+        map_file.write("\nCommonEvent #{event_key}\n")
+        map_file.write("Name = #{textualize(event.name)}\n")
+
+        event.pages.each_with_index do |page, i|
+          next if page.nil?
+
+          lines = ["\n#{@indentation}Page #{i}\n"]
+          last_indentation = 0
 
           page.list.each_with_index do |event_command, j|
-            event_code = event_command.code
-            next unless TARGETED_EVENT_COMMANDS.keys.include?(event_code)
+            event_command_code = event_command.code
+            next unless TARGETED_EVENT_COMMANDS.keys.include?(event_command_code) && !event_command.parameters.empty?
 
-            unless current_event.nil?
-              map_file.write("CommonEvent #{key}\n")
-              current_event = nil
+            if event_command.indent != last_indentation && event_command.indent == 0
+              lines.append("\n")
             end
 
-            unless current_page.nil?
-              map_file.write("\n#{@indentation}Page #{i}\n")
-              current_page = nil
+            last_indentation = event_command.indent
+
+            event_command_name = TARGETED_EVENT_COMMANDS[event_command_code]
+            if event_command_name == 'ShowText' && event_command.parameters[0].empty?
+              event_command.parameters[0] = ' '
             end
 
             serialize_parameters(event_command.parameters)
-            map_file.write(@indentation * (event_command.indent + 2) +
-                           "#{j}-#{TARGETED_EVENT_COMMANDS[event_code]}(#{textualize(event_command.parameters)})\n")
+            lines.append(@indentation * (event_command.indent + 2) + "#{j}-#{event_command_name}(#{textualize(event_command.parameters)})\n")
           end
 
-        end
+          if lines.length > 1
+            map_file.write(*lines)
+          end
 
-        if current_event.nil?
-          map_file.write("\n")
         end
 
       end
@@ -529,34 +527,46 @@ class RVData2Decompiler
   def decompile_troops
 
     File.open(join(@output_path, 'Troops.txt'), 'w:UTF-8') do |troops_file|
+
       @rvdata2_data.each_with_index do |troop, i|
         next if troop.nil?
 
         troops_file.write("Troop #{i}\n")
-        troops_file.write("Name = #{textualize(troop.name)}\n\n")
+        troops_file.write("Name = #{textualize(troop.name)}\n")
 
         troop.pages.each_with_index do |page, j|
           next if page.nil?
-          current_page = i
+
+          lines = ["\nPage #{j}\n"]
+          last_indentation = 0
 
           page.list.each_with_index do |event_command, k|
-            event_code = event_command.code
-            next unless TARGETED_EVENT_COMMANDS.keys.include?(event_code)
+            event_command_code = event_command.code
+            next unless TARGETED_EVENT_COMMANDS.keys.include?(event_command_code) && !event_command.parameters.empty?
 
-            unless current_page.nil?
-              troops_file.write("Page #{j}\n")
-              current_page = nil
+            if event_command.indent != last_indentation && event_command.indent == 0
+              lines.append("\n")
+            end
+
+            last_indentation = event_command.indent
+
+            event_command_name = TARGETED_EVENT_COMMANDS[event_command_code]
+            if event_command_name == 'ShowText' && event_command.parameters[0].empty?
+              event_command.parameters[0] = ' '
             end
 
             serialize_parameters(event_command.parameters)
-            troops_file.write(@indentation * (event_command.indent + 1) +
-                              "#{k}-#{TARGETED_EVENT_COMMANDS[event_code]}(#{textualize(event_command.parameters)})\n")
+            lines.append(@indentation * (event_command.indent + 1) + "#{k}-#{event_command_name}(#{textualize(event_command.parameters)})\n")
           end
 
-          if current_page.nil?
-            troops_file.write("\n")
+          if lines.length > 1
+            troops_file.write(*lines)
           end
 
+        end
+
+        if i != @rvdata2_data.length - 1
+          troops_file.write("\n")
         end
 
       end

@@ -1,22 +1,24 @@
-VX Ace Translator v2.12.4.8:-
-
-[Major]
--Changed the compiler interface, it will now require the game path, an input path, defaulting to "Decompiled" and
-optionally an output path defaulting to the game's Data folder.
+VX Ace Translator v2.16.8.10:-
 
 [Minor]
--Added the ability to overwrite event commands, by manually replacing their name and parameters with other one of the
-supported event commands, while making sure to keep the same index.
+-Added a informative error messages for compiling unknown event commands parsing, to tell to the exact location of the
+unknown event command.
 
--Decompiler now have a default value for the output path which can be optionally changed by the user, The compiler also
-defaults that folder as input.
+-Added the ability to add event commands to maps, troops and common events, by manually writing it, starting with
+desired indentation and index, and adding a plus sigh "+" at the end of the event command, the compiler will insert
+all added events to their corresponding indexes.
 
--Decompiler will not produce metadata files anymore, reducing output size, and increasing the compilation speed significantly.
--Now the decompiler will auto create the output folder including parents if does not exists.
--Added auto decryption to encrypted games.
--Added support for Weapons.rvdata2
--Added support for Armors.rvdata2
+-Add extra null checks events and pages in common events, maps and troops.
+-Added event names for maps and troops.
+
+[Tweaks]
+-Now the Compiler will replace any empty ShowText event commands with Empty commands, if the game itself includes empty
+ShowText events, the decompiler will replace the empty string with a space while serializing.
+
+-Now maps and troops events will follow the modern format as common events.
+-Modified the decompiler and compiler outputs format to be more readable.
+-Now empty pages in troops and maps will not be written.
 
 [Bug Fixes]
--Fixed a bug where compiler was using non-cross platform path format.
--Fixed a bug where .rvdata2 extension was hard coded after the name of any file while printing operations.
+-Fixed a bug where newlines wasn't added between lower indentation event commands unless the indentation level was 0.
+-Fixed a bug where running the plain script before freezing it.

@@ -47,7 +47,9 @@ unless options[:decompile] || options[:compile]
   exit
 end
 
-Dir.chdir(File.dirname(ENV["OCRA_EXECUTABLE"]))
+unless ENV["OCRA_EXECUTABLE"].nil?
+  Dir.chdir(File.dirname(ENV["OCRA_EXECUTABLE"]))
+end
 
 if not options[:decompile].nil?
   d = RVData2Decompiler.new
