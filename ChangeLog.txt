@@ -21,4 +21,4 @@ ShowText events, the decompiler will replace the empty string with a space while
 
 [Bug Fixes]
 -Fixed a bug where newlines wasn't added between lower indentation event commands unless the indentation level was 0.
--Fixed a bug where running the plain script before freezing it.
+-Fixed a bug where running the plain script before freezing it produces errors.
