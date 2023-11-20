@@ -39,7 +39,7 @@ The decompiler format for event comments in general is as follows:-
 
 `Index-CommandEventName([Parameters])`
 
-To manually add an event commands, you will write them in this same format, but at the end of the line, you will add a plus sign, like this:-
+To manually add an event commands, you have write them in the same way, but at the end of the line, you will add a plus sign, like this:-
 
 `Index-CommandEventName([Parameters])+`
 
