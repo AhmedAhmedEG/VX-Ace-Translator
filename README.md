@@ -34,6 +34,18 @@ It supports all event commands excluding only two, 505 (Unnammed) and 205 (SetMo
 
 `["Empty", "ShowTextAttributes", "ShowChoices", "InputNumber", "SelectKeyItem", "ShowScrollingTextAttributes", "Comment", "ConditionalBranch", "Loop", "BreakLoop", "ExitEventProcessing", "CallCommonEvent", "Label", "JumpToLabel", "ControlSwitches", "ControlVariables", "ControlSelfSwitch", "ControlTimer", "ChangeGold", "ChangeItems", "ChangeWeapons", "ChangeArmor", "ChangePartyMember", "ChangeBattleBGM", "ChangeBattleEndME", "ChangeSaveAccess", "ChangeMenuAccess", "ChangeEncounter", "ChangeFormationAccess", "ChangeWindowColor", "TransferPlayer", "SetVehicleLocation", "SetEventLocation", "ScrollMap", "GetSwitchVehicle", "ChangeTransparency", "ShowAnimation", "ShotBalloonIcon", "EraseEvent", "ChangePlayerFollowers", "GatherFollowers", "FadeoutScreen", "FadeinScreen", "TintScreen", "FlashScreen", "ShakeScreen", "Wait", "ShowPicture", "MovePicture", "RotatePicture", "TintPicture", "ErasePicture", "SetWeatherEffects", "PlayBGM", "FadeoutBGM", "SaveBGM", "ReplayBGM", "PlayBGS", "FadeoutBGS", "PlayME", "PlaySE", "StopSE", "PlayMovie", "ChangeMapDisplay", "ChangeTileset", "ChangeBattleBack", "ChangeParallaxBack", "GetLocationInfo", "BattleProcessing", "ShopProcessing", "NameInputProcessing", "ChangeHP", "ChangeMP", "ChangeState", "RecoverAll", "ChangeEXP", "ChangeLevel", "ChangeParameters", "ChangeSkills", "ChangeEquipment", "ChangeActorName", "ChangeActorClass", "ChangeActorGraphic", "ChangeVehicleGraphic", "ChangeActorNickname", "ChangeEnemyHP", "ChangeEnemyMP", "ChangeEnemyState", "EnemyRecoverAll", "EnemyAppear", "EnemyTransform", "ShowBattleAnimation", "ForceAction", "AbortBattle", "OpenMenuScreen", "OpenSaveScreen", "GameOver", "ReturnToTitleScreen", "Script", "ShowText", "When", "WhenCancel", "ChoicesEnd", "ShowScrollingText", "CommentMore", "Else", "BranchEnd", "RepeatAbove", "IfWin", "IfEscape", "IfLose", "BattleProcessingEnd", "ShopItem", "ScriptMore"]`
 
+# How To Add Common Events
+The decompiler format for event comments in general is as follows:-
+
+`Index-CommandEventName([Parameters])`
+
+To manually add an event commands, you will write them in this same format, but at the end of the line, you will add a plus sign, like this:-
+
+`Index-CommandEventName([Parameters])+`
+
+Surly the indentation level you will add behind the event command will be accounted for.
+This will make the compiler insert that command in the index you have written, also you don't have to account for the future indexes of the event commands that follows the one you are adding, this will be automaticlly handled by the compiler.
+
 # How To Build
 1- Make sure you have Ruby v2.7.8, any version higher than that have a different formate for marshaled files, and it's not compatible with the engine.
 
