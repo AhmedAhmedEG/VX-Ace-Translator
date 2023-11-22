@@ -4,11 +4,12 @@ Efficient translator for RPG Maker VX Ace games, fully written in Ruby, that can
 # How To Use
 Call the VXAceTranslator.exe file with the following arguments:-
 
-```Decompiler Usage: RPGMakerVXAceTranslator.exe -d GAME_DIR -o OUTPUT_DIR [Optional]```
+```Decompiler Usage: RPGMakerVXAceTranslator.exe -d GAME_DIR -o OUTPUT_DIR [Optional] --switch-indexless [Optional]```
 
-```Compiler Usage: RPGMakerVXAceTranslator.exe -c GAME_DIR -i INPUT_DIR [Optional] -o OUTPUT_DIR [Optional]```
+```Compiler Usage: RPGMakerVXAceTranslator.exe -c GAME_DIR -i INPUT_DIR [Optional] -o OUTPUT_DIR [Optional] --switch-indexless [Optional]```
 
-You can optionally add (-t TARGET_FILENAME) in case you want to decompile/compile spacific files, only files that include that target filename in it's basename will be proccessed.
+You can add (-t TARGET_FILENAME) in case you want to decompile/compile spacific files, only files that include that target filename in it's basename will be proccessed.
+Also, you can add (--switch-indexless) to switch off indexless mode, enabling indexing mode back.
 
 # Examples
 Example 1:-
@@ -29,17 +30,19 @@ Example 3:-
   
 ```Compiling: VXAceTranslator.exe -c path/to/game -t Map001```
 
-# Supported Event Commands
-It supports all event commands excluding only two, 505 (Unnammed) and 205 (SetMoveRoute).
+# Indexless vs Indexing Mode
+Those are modes spacifify how to read and write event commands in CommonEvents.rvdata2, Maps.rvdata2 and Troops.rvdata2.
 
-`["Empty", "ShowTextAttributes", "ShowChoices", "InputNumber", "SelectKeyItem", "ShowScrollingTextAttributes", "Comment", "ConditionalBranch", "Loop", "BreakLoop", "ExitEventProcessing", "CallCommonEvent", "Label", "JumpToLabel", "ControlSwitches", "ControlVariables", "ControlSelfSwitch", "ControlTimer", "ChangeGold", "ChangeItems", "ChangeWeapons", "ChangeArmor", "ChangePartyMember", "ChangeBattleBGM", "ChangeBattleEndME", "ChangeSaveAccess", "ChangeMenuAccess", "ChangeEncounter", "ChangeFormationAccess", "ChangeWindowColor", "TransferPlayer", "SetVehicleLocation", "SetEventLocation", "ScrollMap", "GetSwitchVehicle", "ChangeTransparency", "ShowAnimation", "ShotBalloonIcon", "EraseEvent", "ChangePlayerFollowers", "GatherFollowers", "FadeoutScreen", "FadeinScreen", "TintScreen", "FlashScreen", "ShakeScreen", "Wait", "ShowPicture", "MovePicture", "RotatePicture", "TintPicture", "ErasePicture", "SetWeatherEffects", "PlayBGM", "FadeoutBGM", "SaveBGM", "ReplayBGM", "PlayBGS", "FadeoutBGS", "PlayME", "PlaySE", "StopSE", "PlayMovie", "ChangeMapDisplay", "ChangeTileset", "ChangeBattleBack", "ChangeParallaxBack", "GetLocationInfo", "BattleProcessing", "ShopProcessing", "NameInputProcessing", "ChangeHP", "ChangeMP", "ChangeState", "RecoverAll", "ChangeEXP", "ChangeLevel", "ChangeParameters", "ChangeSkills", "ChangeEquipment", "ChangeActorName", "ChangeActorClass", "ChangeActorGraphic", "ChangeVehicleGraphic", "ChangeActorNickname", "ChangeEnemyHP", "ChangeEnemyMP", "ChangeEnemyState", "EnemyRecoverAll", "EnemyAppear", "EnemyTransform", "ShowBattleAnimation", "ForceAction", "AbortBattle", "OpenMenuScreen", "OpenSaveScreen", "GameOver", "ReturnToTitleScreen", "Script", "ShowText", "When", "WhenCancel", "ChoicesEnd", "ShowScrollingText", "CommentMore", "Else", "BranchEnd", "RepeatAbove", "IfWin", "IfEscape", "IfLose", "BattleProcessingEnd", "ShopItem", "ScriptMore"]`
+In indexless mode, event commands are compiled from the ground up based on what's written by the user, in the order the user written them in, any removed event commands will be discarded in compilation, this gives more freedom, but can destroy future comabatability in case the game got an update.
 
-# How To Add Event Commands
-The decompiler format for event comments in general is as follows:-
+In indexing mode, event commands are written preceeded by it's index in the list of it's corresponding common event, original event commands in the game's files will be patched by the new values, which the user written in it's corresponding index, this applys for the event type and parameters too, removing any event command or changing it's order will have no effect in the game, gives less freedom, but assurres future combatability, it supports adding new event commands with simple syntax.
+
+# How To Add Event Commands in Indexing Mode
+The decompiler format for event comments in indexing mode is as follows:-
 
 `Index-CommandEventName([Parameters])`
 
-To manually add an event commands, you have write them in the same way, but at the end of the line, you will add a plus sign, like this:-
+To manually add an event command, you have write them in the same way, but at the end of the line, you will add a plus sign, like this:-
 
 `Index-CommandEventName([Parameters])+`
 
