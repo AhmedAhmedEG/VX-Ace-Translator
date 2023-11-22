@@ -12,7 +12,7 @@ class RVData2Decompiler
   attr_accessor :rvdata2_data
   attr_accessor :indentation
 
-  def decompile(game_path, output_path='', target_basename='')
+  def decompile(game_path, output_path='', target_basename='', indexless=true)
     input_path = join(game_path, 'Data')
 
     decrypt_game(game_path)
@@ -34,8 +34,7 @@ class RVData2Decompiler
         next unless file_basename.include?(target_basename)
       end
 
-      print "\n#{RED_COLOR}Decompiling #{filename}...#{RESET_COLOR}\n"
-      $stdout.flush
+      puts "#{GREEN_COLOR}Decompiling #{filename}...#{GREEN_COLOR}"
 
       File.open(join(input_path, filename), 'rb') do |rvdata2_file|
         @rvdata2_data = Marshal.load(rvdata2_file.read)
@@ -51,7 +50,7 @@ class RVData2Decompiler
         self.decompile_classes
 
       when 'CommonEvents'
-        self.decompile_common_events
+        self.decompile_common_events(indexless=indexless)
 
       when 'Enemies'
         self.decompile_enemies
@@ -75,7 +74,7 @@ class RVData2Decompiler
         self.decompile_system
 
       when 'Troops'
-        self.decompile_troops
+        self.decompile_troops(indexless=indexless)
 
       when 'Weapons'
         self.decompile_weapons
@@ -86,13 +85,11 @@ class RVData2Decompiler
       else
 
         if file_basename.match(/\AMap\d+\z/)
-          self.decompile_map(file_basename)
+          self.decompile_map(file_basename, indexless=indexless)
         end
 
       end
 
-      print "#{GREEN_COLOR}Decompiled #{filename}#{RESET_COLOR}\n"
-      $stdout.flush
     end
 
   end
@@ -137,7 +134,7 @@ class RVData2Decompiler
   end
 
   # Array of RPG::CommonEvent class instances
-  def decompile_common_events
+  def decompile_common_events(indexless=true)
     Dir.mkdir(join(@output_path, 'CommonEvents')) unless Dir.exist?(join(@output_path, 'CommonEvents'))
 
     @rvdata2_data.each_with_index do |event, i|
@@ -164,8 +161,17 @@ class RVData2Decompiler
         end
 
         serialize_parameters(event_command.parameters)
-        common_events_file.write(@indentation * (event_command.indent + 1) +
-                                 "#{j}-#{event_command_name}(#{textualize(event_command.parameters)})\n")
+
+        if indexless
+          common_events_file.write(@indentation * (event_command.indent + 1) +
+                                     "#{event_command_name}(#{textualize(event_command.parameters)})\n")
+
+        else
+          common_events_file.write(@indentation * (event_command.indent + 1) +
+                                   "#{j}-#{event_command_name}(#{textualize(event_command.parameters)})\n")
+
+        end
+
       end
 
       common_events_file.rewind
@@ -255,7 +261,7 @@ class RVData2Decompiler
   end
 
   # Instance of RPG::Map class
-  def decompile_map(filename)
+  def decompile_map(filename, indexless=true)
     Dir.mkdir(join(@output_path, 'Maps')) unless Dir.exist?(join(@output_path, 'Maps'))
 
     File.open(join(@output_path, 'Maps', "#{filename}.txt"), 'w:UTF-8') do |map_file|
@@ -292,7 +298,17 @@ class RVData2Decompiler
             end
 
             serialize_parameters(event_command.parameters)
-            lines.append(@indentation * (event_command.indent + 2) + "#{j}-#{event_command_name}(#{textualize(event_command.parameters)})\n")
+
+            if indexless
+              lines.append(@indentation * (event_command.indent + 2) +
+                           "#{event_command_name}(#{textualize(event_command.parameters)})\n")
+
+            else
+              lines.append(@indentation * (event_command.indent + 2) +
+                           "#{j}-#{event_command_name}(#{textualize(event_command.parameters)})\n")
+
+            end
+
           end
 
           if lines.length > 1
@@ -524,7 +540,7 @@ class RVData2Decompiler
   end
 
   # Array of RGP::Troops class instances
-  def decompile_troops
+  def decompile_troops(indexless=true)
 
     File.open(join(@output_path, 'Troops.txt'), 'w:UTF-8') do |troops_file|
 
@@ -556,7 +572,15 @@ class RVData2Decompiler
             end
 
             serialize_parameters(event_command.parameters)
-            lines.append(@indentation * (event_command.indent + 1) + "#{k}-#{event_command_name}(#{textualize(event_command.parameters)})\n")
+
+            if indexless
+              lines.append(@indentation * (event_command.indent + 1) + "#{event_command_name}(#{textualize(event_command.parameters)})\n")
+
+            else
+              lines.append(@indentation * (event_command.indent + 1) + "#{k}-#{event_command_name}(#{textualize(event_command.parameters)})\n")
+
+            end
+
           end
 
           if lines.length > 1

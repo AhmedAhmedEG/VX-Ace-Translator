@@ -1,24 +1,21 @@
-VX Ace Translator v2.16.8.10:-
+VX Ace Translator v2.22.12.12:-
 
 [Minor]
--Added a informative error messages for compiling unknown event commands parsing, to tell to the exact location of the
-unknown event command.
+-Added indexless mode for event commands that enables to directly compile them, creating a new set of event commands
+rather than patching existing ones, it will be enabled by default.
 
--Added the ability to add event commands to maps, troops and common events, by manually writing it, starting with
-desired indentation and index, and adding a plus sigh "+" at the end of the event command, the compiler will insert
-all added events to their corresponding indexes.
-
--Add extra null checks events and pages in common events, maps and troops.
--Added event names for maps and troops.
+-Now the compiler will remove ex related rvdata2 files by default, as the engine uses them in place of the patched ones.
+-Added support for the rest of event commands (505 Unnamed and 205 SetMoveRoute), with infinite depth recursion.
+-Added error handlers for event pages/commands with indexes that are outside bounds.
+-Added parameter serialization for manual added event commands in indexing mode.
+-Added error handlers for wrong indentation in event commands
 
 [Tweaks]
--Now the Compiler will replace any empty ShowText event commands with Empty commands, if the game itself includes empty
-ShowText events, the decompiler will replace the empty string with a space while serializing.
-
--Now maps and troops events will follow the modern format as common events.
--Modified the decompiler and compiler outputs format to be more readable.
--Now empty pages in troops and maps will not be written.
+-Now serialized objects in event commands, have an extra space to correctly separate attributes.
+-Now event handlers will not stop the compiler from progression.
+-Now error messages will output to stderr, gaining the normal red color.
+-reduced clutter in compiler/decompiler output.
 
 [Bug Fixes]
--Fixed a bug where newlines wasn't added between lower indentation event commands unless the indentation level was 0.
--Fixed a bug where running the plain script before freezing it produces errors.
+-Fixed a critical bug where page number reader in maps could catch wrong lines.
+-Fixed a critical bug where page number reader in troops could catch wrong lines.

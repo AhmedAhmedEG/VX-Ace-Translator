@@ -46,6 +46,7 @@ TARGETED_EVENT_COMMANDS = {0 => "Empty",
                            202 => "SetVehicleLocation",
                            203 => "SetEventLocation",
                            204 => "ScrollMap",
+                           205 => "SetMoveRoute",
                            206 => "GetSwitchVehicle",
                            211 => "ChangeTransparency",
                            212 => "ShowAnimation",
@@ -120,6 +121,7 @@ TARGETED_EVENT_COMMANDS = {0 => "Empty",
                            411 => "Else",
                            412 => "BranchEnd",
                            413 => "RepeatAbove",
+                           505 => "Unnamed",
                            601 => "IfWin",
                            602 => "IfEscape",
                            603 => "IfLose",
@@ -144,12 +146,17 @@ def serialize_parameters(parameters)
 
     if parameter.class.name.to_s.start_with?('Table', 'Tone', 'Color', 'RPG::')
 
-      attributes = parameter.class.instance_method(:initialize).parameters.map do |_, var|
-        attribute = parameter.instance_variable_get("@#{var}")
-        "#{var.to_s}=#{textualize(attribute)}"
+      attributes = parameter.instance_variables.map do |var|
+        attribute = parameter.instance_variable_get(var)
+
+        if attribute.class.name.to_s == 'Array'
+          serialize_parameters(attribute)
+        end
+
+        "#{var}=#{textualize(attribute)}"
       end
 
-      parameters[i] = "#{parameter.class.name}(#{attributes.join(',')})"
+      parameters[i] = "#{parameter.class.name}(#{attributes.join(', ')})"
 
     end
 
@@ -162,11 +169,44 @@ def deserialize_parameters(parameters)
   parameters.each_with_index do |parameter, i|
 
     if parameter.to_s.start_with?('Table', 'Tone', 'Color', 'RPG::')
-      class_name, attributes = parameter.match(/(.+?)\((.+)\)/).captures
+      class_name, attributes = parameter.match(/(\D+?)\((.+)\)/).captures
       class_obj = Object.const_get(class_name)
 
-      attribute_values = attributes.split(',').map { |attrib| eval(attrib.split('=')[-1]) }
-      parameters[i] = class_obj.new(*attribute_values)
+      begin
+        instance = class_obj.new
+
+        attributes.scan(/(@[^\W\d]+?=(?:\[.*\]|[^\W\d]+\(.+?\)|(?<!\\)".*?(?<!\\)"|-?\d+.\d+|-?\d+|true|false))/).flatten.each do |attrib|
+          var_name, var_value = attrib.split('=', 2)
+
+          value = eval(var_value)
+          if value.class.name.to_s == 'Array'
+            deserialize_parameters(value)
+          end
+
+          instance.instance_variable_set("#{var_name}", value)
+        end
+
+        parameters[i] = instance
+
+      rescue ArgumentError => e
+        attribute_values = []
+
+        attributes.scan(/(@[^\W\d]+?=(?:\[.*\]|[^\W\d]+\(.+?\)|(?<!\\)".*?(?<!\\)"|-?\d+.\d+|-?\d+|true|false))/).flatten.each do |attrib|
+          var_name, var_value = attrib.split('=', 2)
+
+          value = eval(var_value)
+          if value.class.name.to_s == 'Array'
+            deserialize_parameters(value)
+          end
+
+          attribute_values << value
+        end
+
+        parameters[i] = class_obj.new(*attribute_values)
+
+      end
+
+
     end
 
   end
@@ -186,6 +226,12 @@ def decrypt_game(game_path)
     decrypter_path =  join('Resources', 'Tools', 'RPGMakerDecrypter.exe')
 
     system("\"#{decrypter_path}\" \"#{rgss3a_path}\"")
+
+    File.delete(join(game_data_path, 'DataEx.rvdata2')) if File.exist?(join(game_data_path, 'DataEx.rvdata2'))
+    File.delete(join(game_data_path, 'ExDataUpdate.rvdata2')) if File.exist?(join(game_data_path, 'ExDataUpdate.rvdata2'))
+    File.delete(join(game_data_path, 'ExScriptUpdate.rvdata2')) if File.exist?(join(game_data_path, 'ExScriptUpdate.rvdata2'))
+    File.delete(join(game_data_path, 'ExVersionID.rvdata2')) if File.exist?(join(game_data_path, 'ExVersionID.rvdata2'))
+
     File.rename(rgss3a_path, rgss3a_path + '.old')
   end
 
