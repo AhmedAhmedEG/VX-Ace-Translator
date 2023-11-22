@@ -4,9 +4,9 @@ Efficient translator for RPG Maker VX Ace games, fully written in Ruby, that can
 # How To Use
 Call the VXAceTranslator.exe file with the following arguments:-
 
-```Decompiler Usage: RPGMakerVXAceTranslator.exe -d GAME_DIR -o OUTPUT_DIR [Optional] --switch-indexless [Optional]```
+```Decompiler Usage: RPGMakerVXAceTranslator.exe -d GAME_DIR -o OUTPUT_DIR [Optional]```
 
-```Compiler Usage: RPGMakerVXAceTranslator.exe -c GAME_DIR -i INPUT_DIR [Optional] -o OUTPUT_DIR [Optional] --switch-indexless [Optional]```
+```Compiler Usage: RPGMakerVXAceTranslator.exe -c GAME_DIR -i INPUT_DIR [Optional] -o OUTPUT_DIR [Optional]```
 
 You can add (-t TARGET_FILENAME) in case you want to decompile/compile spacific files, only files that include that target filename in it's basename will be proccessed.
 Also, you can add (--switch-indexless) to switch off indexless mode, enabling indexing mode back.
