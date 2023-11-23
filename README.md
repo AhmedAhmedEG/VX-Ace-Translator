@@ -2,16 +2,16 @@
 Efficient translator for RPG Maker VX Ace games, fully written in Ruby, that can decompile all .rvdata2 files that are text-related to a readable text files and vice-versa.
 
 - Auto decryption for rgss3a files, it will do this only if there's no "Data" folder found in the game's folder.
-- Error handling for out of bound pages, common events and event commands, along with indentaion too.
-- Provides two modes for decompiling/compiling of event commands, indexless and indexing modes.
+
 - Infinite depth serialization/deserialization all parameter types in common events.
 - User friendly textual representation of all parameter types in common events.
-- Filtering to target spacific file(s) for decompiling/compiling.
-- Hightly organized output format and file structure.
-- Full support for all event command types.
 - Fast decomopling/compiling speed.
-- Small output size.
-
+- Hightly organized output format and file structure.
+- Filtering to target spacific file(s) for decompiling/compiling.
+- Full support for all event command types.
+- Provides two modes for decompiling/compiling of event commands, indexless and indexing modes.
+- Small output file size, text files and ruby scripts only.
+- Error handling for out of bound pages, common events and event commands, along with indentaion too.
 
 # How To Use
 Call the VXAceTranslator.exe file with the following arguments:-
