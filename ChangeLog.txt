@@ -1,21 +1,7 @@
-VX Ace Translator v2.22.12.12:-
+VX Ace Translator v2.24.12.12:-
 
 [Minor]
--Added indexless mode for event commands that enables to directly compile them, creating a new set of event commands
-rather than patching existing ones, it will be enabled by default.
+-Significantly improved translator output format, using correct coloring and line overwriting techniques to
+report detailed info about progress.
 
--Now the compiler will remove ex related rvdata2 files by default, as the engine uses them in place of the patched ones.
--Added support for the rest of event commands (505 Unnamed and 205 SetMoveRoute), with infinite depth recursion.
--Added error handlers for event pages/commands with indexes that are outside bounds.
--Added parameter serialization for manual added event commands in indexing mode.
--Added error handlers for wrong indentation in event commands
-
-[Tweaks]
--Now serialized objects in event commands, have an extra space to correctly separate attributes.
--Now event handlers will not stop the compiler from progression.
--Now error messages will output to stderr, gaining the normal red color.
--reduced clutter in compiler/decompiler output.
-
-[Bug Fixes]
--Fixed a critical bug where page number reader in maps could catch wrong lines.
--Fixed a critical bug where page number reader in troops could catch wrong lines.
+-Now the compiler will skip files that doesn't have a decompiled source available, rather than crashing.

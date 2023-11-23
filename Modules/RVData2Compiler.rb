@@ -16,7 +16,10 @@ class RVData2Compiler
   def compile(game_path, input_path='', output_path='', target_basename='', indexless=true)
     game_data_path = join(game_path, 'Data')
 
+    print "#{GREEN_COLOR}Decrypting Game...#{RESET_COLOR}"
     decrypt_game(game_path)
+    print "\r#{GREEN_COLOR}Game Decrypted.#{' ' * 10}#{RESET_COLOR}\n"
+
     if input_path.empty?
       @input_path = "Decompiled"
     else
@@ -39,76 +42,77 @@ class RVData2Compiler
         next unless file_basename.include?(target_basename)
       end
 
-      puts "#{GREEN_COLOR}Compiling #{filename}...#{GREEN_COLOR}"
+      print "#{GREEN_COLOR}Reading #{filename}...#{RESET_COLOR}"
 
       File.open(join(game_data_path, filename), "rb") do |rvdata2_file|
         @rvdata2_data = Marshal.load(rvdata2_file.read)
       end
 
+      done = false
       case file_basename
 
       when 'Actors'
-        self.compile_actors
+        done = self.compile_actors
 
       when 'Classes'
-        self.compile_classes
+        done = self.compile_classes
 
       when 'CommonEvents'
 
         if indexless
-          self.compile_common_events_indexless
+          done = self.compile_common_events_indexless
 
         else
-          self.compile_common_events
+          done = self.compile_common_events
 
         end
 
       when 'Enemies'
-        self.compile_enemies
+        done = self.compile_enemies
 
       when 'Items'
-        self.compile_items
+        done = self.compile_items
 
       when 'MapInfos'
-        self.compile_map_infos
+        done = self.compile_map_infos
 
       when 'Scripts'
-        self.compile_scripts
+        done = self.compile_scripts
 
       when 'Skills'
-        self.compile_skills
+        done = self.compile_skills
 
       when 'States'
-        self.compile_states
+        done = self.compile_states
 
       when 'System'
-        self.compile_system
+        done = self.compile_system
 
       when 'Troops'
 
         if indexless
-          self.compile_troops_indexless
+          done = self.compile_troops_indexless
 
         else
-          self.compile_troops
+          done = self.compile_troops
 
         end
 
       when 'Weapons'
-        self.compile_weapons
+        done = self.compile_weapons
 
       when 'Armors'
-        self.compile_armors
+        done = self.compile_armors
 
       else
 
         if file_basename.match(/\AMap\d+\z/)
 
           if indexless
-            self.compile_map_indexless(file_basename)
+            done = self.compile_map_indexless(file_basename)
 
           else
-            self.compile_map(file_basename)
+            done = self.compile_map(file_basename)
 
           end
 
@@ -116,18 +120,27 @@ class RVData2Compiler
 
       end
 
-      File.open(join(output_path, filename), "wb") do |rvdata2_file|
-        rvdata2_file.write(Marshal.dump(@rvdata2_data))
+      if done
+        print "\r#{GREEN_COLOR}Compiling #{filename}...#{' ' * 10}#{RESET_COLOR}"
+
+        File.open(join(output_path, filename), "wb") do |rvdata2_file|
+          rvdata2_file.write(Marshal.dump(@rvdata2_data))
+        end
+
+        print "\r#{GREEN_COLOR}Compiled #{filename}.#{' ' * 10}#{RESET_COLOR}\n"
+
+      else
+        print "\r#{RED_COLOR}Skipped #{filename}.#{' ' * 10}#{RESET_COLOR}\n"
+
       end
 
-      # print "#{GREEN_COLOR}Compiled #{filename}#{RESET_COLOR}\n"
-      # $stdout.flush
     end
 
   end
 
   def compile_actors
 
+    return false unless File.exist?(join(@input_path, 'Actors.txt'))
     File.open(join(@input_path, 'Actors.txt'), 'r:UTF-8') do |actors_file|
       ind = 0
 
@@ -164,10 +177,13 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_classes
 
+    return false unless File.exist?(join(@input_path, 'Classes.txt'))
     File.open(join(@input_path, 'Classes.txt'), 'r:UTF-8') do |classes_file|
       ind = 0
 
@@ -195,13 +211,17 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_common_events
     event_ind = 0
 
+    return false unless Dir.exist?(join(@input_path, 'CommonEvents'))
     Dir.foreach(join(@input_path, 'CommonEvents')) do |common_event_filename|
       next if %w[. ..].include?(common_event_filename)
+      next unless File.exist?(join(@input_path, 'CommonEvents', common_event_filename))
 
       File.open(join(@input_path, 'CommonEvents', common_event_filename), 'r:UTF-8') do |common_event_file|
         added_event_commands = {}
@@ -270,13 +290,17 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_common_events_indexless
     event_ind = 0
 
+    return false unless Dir.exist?(join(@input_path, 'CommonEvents'))
     Dir.foreach(join(@input_path, 'CommonEvents')) do |common_event_filename|
       next if %w[. ..].include?(common_event_filename)
+      next unless File.exist?(join(@input_path, 'CommonEvents', common_event_filename))
 
       File.open(join(@input_path, 'CommonEvents', common_event_filename), 'r:UTF-8') do |common_event_file|
 
@@ -323,10 +347,13 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_enemies
 
+    return false unless File.exist?(join(@input_path, 'Enemies.txt'))
     File.open(join(@input_path, 'Enemies.txt'), 'r:UTF-8') do |enemies_file|
       ind = 0
 
@@ -357,10 +384,13 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_items
 
+    return false unless File.exist?(join(@input_path, 'Items.txt'))
     File.open(join(@input_path, 'Items.txt'), 'r:UTF-8') do |items_file|
       ind = 0
 
@@ -388,10 +418,13 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_weapons
 
+    return false unless File.exist?(join(@input_path, 'Weapons.txt'))
     File.open(join(@input_path, 'Weapons.txt'), 'r:UTF-8') do |weapons_file|
       ind = 0
 
@@ -419,10 +452,13 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_armors
 
+    return false unless File.exist?(join(@input_path, 'Armors.txt'))
     File.open(join(@input_path, 'Armors.txt'), 'r:UTF-8') do |armors_file|
       ind = 0
 
@@ -450,12 +486,15 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_map(file_basename)
     event_ind = 0
     page_ind = 0
 
+    return false unless File.exist?(join(@input_path, 'Maps', "#{file_basename}.txt"))
     File.open(join(@input_path, 'Maps', "#{file_basename}.txt"), 'r:UTF-8') do |map_file|
       added_event_commands = {}
 
@@ -542,12 +581,15 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_map_indexless(file_basename)
     event_ind = 0
     page_ind = 0
 
+    return false unless File.exist?(join(@input_path, 'Maps', "#{file_basename}.txt"))
     File.open(join(@input_path, 'Maps', "#{file_basename}.txt"), 'r:UTF-8') do |map_file|
 
       map_file.each_line do |line|
@@ -600,10 +642,13 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_map_infos
 
+    return false unless File.exist?(join(@input_path, 'MapInfos.txt'))
     File.open(join(@input_path, 'MapInfos.txt'), 'r:UTF-8') do |map_infos_file|
       id = 0
 
@@ -625,23 +670,30 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_scripts
 
+    return false unless File.exist?(join(@input_path, 'Scripts'))
     @rvdata2_data.each_with_index  do |script, i|
       script_path =  join(@input_path, 'Scripts', "#{i} - #{File.basename(script[1])}.rb")
 
+      next unless File.exist?(script_path)
       File.open(script_path, 'rb') do |script_file|
         script << Zlib::Deflate.deflate(script_file.read)
       end
 
     end
 
+    true
+
   end
 
   def compile_skills
 
+    return false unless File.exist?(join(@input_path, 'Skills.txt'))
     File.open(join(@input_path, 'Skills.txt'), 'r:UTF-8') do |skills_file|
       ind = 0
 
@@ -675,10 +727,13 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_states
 
+    return false unless File.exist?(join(@input_path, 'States.txt'))
     File.open(join(@input_path, 'States.txt'), 'r:UTF-8') do |states_file|
       ind = 0
 
@@ -718,10 +773,13 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_system
 
+    return false unless File.exist?(join(@input_path, 'System.txt'))
     File.open(join(@input_path, 'System.txt'), 'r:UTF-8') do |system_file|
 
       system_file.each_line do |line|
@@ -757,6 +815,7 @@ class RVData2Compiler
 
     end
 
+    return false unless File.exist?(join(@input_path, 'System', 'Elements.txt'))
     File.open(join(@input_path, 'System', 'Elements.txt'), 'r:UTF-8') do |elements_file|
       offset = @rvdata2_data.elements[0].nil? ? 1 : 0
 
@@ -766,6 +825,7 @@ class RVData2Compiler
 
     end
 
+    return false unless File.exist?(join(@input_path, 'System', 'Skill Types.txt'))
     File.open(join(@input_path, 'System', 'Skill Types.txt'), 'r:UTF-8') do |skill_types_file|
       offset = @rvdata2_data.skill_types[0].nil? ? 1 : 0
 
@@ -775,6 +835,7 @@ class RVData2Compiler
 
     end
 
+    return false unless File.exist?(join(@input_path, 'System', 'Weapon Types.txt'))
     File.open(join(@input_path, 'System', 'Weapon Types.txt'), 'r:UTF-8') do |weapon_types_file|
       offset = @rvdata2_data.weapon_types[0].nil? ? 1 : 0
 
@@ -784,6 +845,7 @@ class RVData2Compiler
 
     end
 
+    return false unless File.exist?(join(@input_path, 'System', 'Armor Types.txt'))
     File.open(join(@input_path, 'System', 'Armor Types.txt'), 'r:UTF-8') do |armor_types_file|
       offset = @rvdata2_data.armor_types[0].nil? ? 1 : 0
 
@@ -793,6 +855,7 @@ class RVData2Compiler
 
     end
 
+    return false unless File.exist?(join(@input_path, 'System', 'Switches.txt'))
     File.open(join(@input_path, 'System', 'Switches.txt'), 'r:UTF-8') do |switches_file|
       offset = @rvdata2_data.switches[0].nil? ? 1 : 0
 
@@ -802,6 +865,7 @@ class RVData2Compiler
 
     end
 
+    return false unless File.exist?(join(@input_path, 'System', 'Variables.txt'))
     File.open(join(@input_path, 'System', 'Variables.txt'), 'r:UTF-8') do |variables_file|
       offset = @rvdata2_data.variables[0].nil? ? 1 : 0
 
@@ -811,6 +875,7 @@ class RVData2Compiler
 
     end
 
+    return false unless File.exist?(join(@input_path, 'System', 'Terms.txt'))
     File.open(join(@input_path, 'System', 'Terms.txt'), 'r:UTF-8') do |terms_file|
       values = []
 
@@ -826,12 +891,15 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_troops
     troop_ind = 0
     page_ind = 0
 
+    return false unless File.exist?(join(@input_path, 'Troops.txt'))
     File.open(join(@input_path, 'Troops.txt'), 'r:UTF-8') do |troops_file|
       added_event_commands = {}
 
@@ -912,12 +980,15 @@ class RVData2Compiler
 
     end
 
+    true
+
   end
 
   def compile_troops_indexless
     troop_ind = 0
     page_ind = 0
 
+    return false unless File.exist?(join(@input_path, 'Troops.txt'))
     File.open(join(@input_path, 'Troops.txt'), 'r:UTF-8') do |troops_file|
 
       troops_file.each_line do |line|
@@ -963,6 +1034,8 @@ class RVData2Compiler
       end
 
     end
+
+    true
 
   end
 

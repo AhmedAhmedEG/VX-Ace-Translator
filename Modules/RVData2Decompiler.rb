@@ -15,7 +15,10 @@ class RVData2Decompiler
   def decompile(game_path, output_path='', target_basename='', indexless=true)
     input_path = join(game_path, 'Data')
 
+    print "#{GREEN_COLOR}Decrypting Game...#{RESET_COLOR}"
     decrypt_game(game_path)
+    print "\r#{GREEN_COLOR}Game Decrypted.#{' ' * 10}#{RESET_COLOR}\n"
+
     if output_path.empty?
       @output_path = "Decompiled"
     else
@@ -34,11 +37,13 @@ class RVData2Decompiler
         next unless file_basename.include?(target_basename)
       end
 
-      puts "#{GREEN_COLOR}Decompiling #{filename}...#{GREEN_COLOR}"
+      print "#{GREEN_COLOR}Reading #{filename}...#{RESET_COLOR}"
 
       File.open(join(input_path, filename), 'rb') do |rvdata2_file|
         @rvdata2_data = Marshal.load(rvdata2_file.read)
       end
+
+      print "\r#{GREEN_COLOR}Decompiling #{filename}...#{' ' * 10}#{RESET_COLOR}"
 
       Dir.mkdir(@output_path) unless Dir.exist?(@output_path)
       case file_basename
@@ -89,6 +94,8 @@ class RVData2Decompiler
         end
 
       end
+
+      print "\r#{GREEN_COLOR}Decompiled #{filename}.#{' ' * 10}#{RESET_COLOR}\n"
 
     end
 
