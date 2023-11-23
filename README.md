@@ -6,11 +6,11 @@ Efficient translator for RPG Maker VX Ace games, fully written in Ruby, that can
 - Provides two modes for decompiling/compiling of event commands, indexless and indexing modes.
 - Infinite depth serialization/deserialization all parameter types in common events.
 - User friendly textual representation of all parameter types in common events.
-- Fast decomopling/compiling speed.
-- Small output size.
 - Filtering to target spacific file(s) for decompiling/compiling.
 - Hightly organized output format and file structure.
 - Full support for all event command types.
+- Fast decomopling/compiling speed.
+- Small output size.
 
 
 # How To Use
