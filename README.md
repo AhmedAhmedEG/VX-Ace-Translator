@@ -1,17 +1,18 @@
 # Description
-Efficient translator for RPG Maker VX Ace games, fully written in Ruby, that can decompile all .rvdata2 files that are text-related to a readable text files and vice-versa.
+Efficient translator for RPG Maker VX Ace games, fully written in Ruby, that can decompile/compile all text-related .rvdata2 files to a readable text files and vice-versa.
 
-- Auto decryption for rgss3a files, it will do this only if there's no "Data" folder found in the game's folder.
-
-- Infinite depth serialization/deserialization all parameter types in common events.
-- User friendly textual representation of all parameter types in common events.
-- Fast decomopling/compiling speed.
-- Hightly organized output format and file structure.
-- Filtering to target spacific file(s) for decompiling/compiling.
+# Features
+- Automatic decryption for rgss3a files if no "Data" folder is found in the game's directory.
+- Infinite depth serialization and deserialization of all parameter types in common events.
+- User-friendly textual representation of all parameter types in common events.
+- Fast decompling/compiling speed.
+- Highly organized output format and file structure.
+- Filtering to specifically target file(s) for decompiling/compiling.
 - Full support for all event command types.
-- Provides two modes for decompiling/compiling of event commands, indexless and indexing modes.
-- Small output file size, text files and ruby scripts only.
-- Error handling for out of bound pages, common events and event commands, along with indentaion too.
+- Two modes for decompiling/compiling of event commands: indexless and indexing modes.
+- Small file output size, limited to text files and Ruby scripts only.
+- Error handling for out-of-bound pages, common events, and event commands, including indentation.
+- Beautiful and informative terminal outputs.
 
 # How To Use
 Call the VXAceTranslator.exe file with the following arguments:-
@@ -20,8 +21,10 @@ Call the VXAceTranslator.exe file with the following arguments:-
 
 ```Compiler Usage: RPGMakerVXAceTranslator.exe -c GAME_DIR -i INPUT_DIR [Optional] -o OUTPUT_DIR [Optional]```
 
-You can add (-t TARGET_FILENAME) in case you want to decompile/compile specific files, only files that include that target filename in it's base name will be processed.
-Also, you can add (--switch-indexless) to switch off indexless mode, enabling indexing mode back.
+Optional Arguments:
+- -t TARGET_FILENAME: Specifies a target filename to decompile/compile specific files. Only files with the given target filename included in their base name will be processed.
+- --force-decrypt: Forces the translator to decrypt the game and extract raw data files, even if the game is already decrypted.
+- --switch-indexless: Disables indexless mode and re-enables indexing mode.
 
 # Examples
 Example 1:-
