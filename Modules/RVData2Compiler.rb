@@ -13,13 +13,10 @@ class RVData2Compiler
   attr_accessor :rvdata2_data
   attr_accessor :indentation
 
-  def compile(game_path, input_path='', output_path='', target_basename='', indexless=true)
+  def compile(game_path, input_path='', output_path='', target_basename='', indexless=true, force_decrypt=false)
     game_data_path = join(game_path, 'Data')
 
-    print "#{GREEN_COLOR}Decrypting Game...#{RESET_COLOR}"
-    decrypt_game(game_path)
-    print "\r#{GREEN_COLOR}Game Decrypted.#{' ' * 10}#{RESET_COLOR}\n"
-
+    decrypt_game(game_path, forced=force_decrypt)
     if input_path.empty?
       @input_path = "Decompiled"
     else
@@ -42,7 +39,7 @@ class RVData2Compiler
         next unless file_basename.include?(target_basename)
       end
 
-      print "#{GREEN_COLOR}Reading #{filename}...#{RESET_COLOR}"
+      print "#{BLUE_COLOR}Reading #{filename}...#{RESET_COLOR}"
 
       File.open(join(game_data_path, filename), "rb") do |rvdata2_file|
         @rvdata2_data = Marshal.load(rvdata2_file.read)
@@ -121,16 +118,19 @@ class RVData2Compiler
       end
 
       if done
-        print "\r#{GREEN_COLOR}Compiling #{filename}...#{' ' * 10}#{RESET_COLOR}"
+        clear_line
+        print "\r#{BLUE_COLOR}Compiling #{filename}...#{RESET_COLOR}"
 
         File.open(join(output_path, filename), "wb") do |rvdata2_file|
           rvdata2_file.write(Marshal.dump(@rvdata2_data))
         end
 
-        print "\r#{GREEN_COLOR}Compiled #{filename}.#{' ' * 10}#{RESET_COLOR}\n"
+        clear_line
+        print "\r#{GREEN_COLOR}Compiled #{filename}.#{RESET_COLOR}\n"
 
       else
-        print "\r#{RED_COLOR}Skipped #{filename}.#{' ' * 10}#{RESET_COLOR}\n"
+        clear_line
+        print "\r#{RED_COLOR}Skipped #{filename}.#{RESET_COLOR}\n"
 
       end
 
@@ -221,7 +221,6 @@ class RVData2Compiler
     return false unless Dir.exist?(join(@input_path, 'CommonEvents'))
     Dir.foreach(join(@input_path, 'CommonEvents')) do |common_event_filename|
       next if %w[. ..].include?(common_event_filename)
-      next unless File.exist?(join(@input_path, 'CommonEvents', common_event_filename))
 
       File.open(join(@input_path, 'CommonEvents', common_event_filename), 'r:UTF-8') do |common_event_file|
         added_event_commands = {}
@@ -300,7 +299,6 @@ class RVData2Compiler
     return false unless Dir.exist?(join(@input_path, 'CommonEvents'))
     Dir.foreach(join(@input_path, 'CommonEvents')) do |common_event_filename|
       next if %w[. ..].include?(common_event_filename)
-      next unless File.exist?(join(@input_path, 'CommonEvents', common_event_filename))
 
       File.open(join(@input_path, 'CommonEvents', common_event_filename), 'r:UTF-8') do |common_event_file|
 
@@ -676,13 +674,12 @@ class RVData2Compiler
 
   def compile_scripts
 
-    return false unless File.exist?(join(@input_path, 'Scripts'))
+    return false unless Dir.exist?(join(@input_path, 'Scripts'))
     @rvdata2_data.each_with_index  do |script, i|
       script_path =  join(@input_path, 'Scripts', "#{i} - #{File.basename(script[1])}.rb")
 
-      next unless File.exist?(script_path)
       File.open(script_path, 'rb') do |script_file|
-        script << Zlib::Deflate.deflate(script_file.read)
+        @rvdata2_data[i][2] = Zlib::Deflate.deflate(script_file.read)
       end
 
     end

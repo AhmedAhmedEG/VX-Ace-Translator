@@ -1,7 +1,14 @@
-VX Ace Translator v2.24.12.12:-
+VX Ace Translator v2.25.14.16:-
 
 [Minor]
--Significantly improved translator output format, using correct coloring and line overwriting techniques to
-report detailed info about progress.
+-Added a new argument (--force-decrypt) that will force the translator to always decrypt the game before compiling/decompiling.
 
--Now the compiler will skip files that doesn't have a decompiled source available, rather than crashing.
+[Tweaks]
+-Now ex related files will be removed only by the compiler.
+-Added more colors for translator outputs.
+
+[Bug Fixes]
+-Fixed a critical bug where the decompiler was ignoring event commands with empty parameters in indexless mode.
+-Fixed a bug in the translator output where the terminal cursor was pushed away and glitching.
+-Fixed a bug where the translator was reporting "Game Decrypted" even if it has not.
+-Fixed a critical bug where scripts compiler was not working correctly.

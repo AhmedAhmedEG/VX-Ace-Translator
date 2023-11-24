@@ -134,6 +134,10 @@ GREEN_COLOR = "\e[32m"
 BLUE_COLOR = "\e[34m"
 RESET_COLOR = "\e[0m"
 
+def clear_line
+  print "\r#{' ' * 50}"
+end
+
 # Convert an class attribute to a parsable string, along with unicode characters un-escaping.
 def textualize(attribute)
   # attribute.inspect.gsub(/\\u([\da-fA-F]{4})/) { [$1.to_i(16)].pack("U*") }
@@ -213,10 +217,11 @@ def deserialize_parameters(parameters)
 
 end
 
-def decrypt_game(game_path)
+def decrypt_game(game_path, forced=false, remove_ex=true)
   game_data_path = join(game_path, 'Data')
 
-  unless Dir.exist?(game_data_path) && !Dir.empty?(game_data_path)
+  unless !forced && (Dir.exist?(game_data_path) && !Dir.empty?(game_data_path))
+    print "#{BLUE_COLOR}Decrypting Game...#{RESET_COLOR}"
     rgss3a_path = join(game_path, 'Game.rgss3a')
 
     if File.exist?(rgss3a_path + '.old')
@@ -225,14 +230,22 @@ def decrypt_game(game_path)
 
     decrypter_path =  join('Resources', 'Tools', 'RPGMakerDecrypter.exe')
 
-    system("\"#{decrypter_path}\" \"#{rgss3a_path}\"")
+    if Dir.exist?(game_data_path)
+      FileUtils.rm_r(game_data_path)
+    end
 
+    system("\"#{decrypter_path}\" \"#{rgss3a_path}\"")
+    File.rename(rgss3a_path, rgss3a_path + '.old')
+
+    clear_line
+    print "\r#{GREEN_COLOR}Game Decrypted.#{RESET_COLOR}\n"
+  end
+
+  if remove_ex
     File.delete(join(game_data_path, 'DataEx.rvdata2')) if File.exist?(join(game_data_path, 'DataEx.rvdata2'))
     File.delete(join(game_data_path, 'ExDataUpdate.rvdata2')) if File.exist?(join(game_data_path, 'ExDataUpdate.rvdata2'))
     File.delete(join(game_data_path, 'ExScriptUpdate.rvdata2')) if File.exist?(join(game_data_path, 'ExScriptUpdate.rvdata2'))
     File.delete(join(game_data_path, 'ExVersionID.rvdata2')) if File.exist?(join(game_data_path, 'ExVersionID.rvdata2'))
-
-    File.rename(rgss3a_path, rgss3a_path + '.old')
   end
 
 end

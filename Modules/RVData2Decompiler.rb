@@ -12,13 +12,10 @@ class RVData2Decompiler
   attr_accessor :rvdata2_data
   attr_accessor :indentation
 
-  def decompile(game_path, output_path='', target_basename='', indexless=true)
+  def decompile(game_path, output_path='', target_basename='', indexless=true, force_decrypt=false)
     input_path = join(game_path, 'Data')
 
-    print "#{GREEN_COLOR}Decrypting Game...#{RESET_COLOR}"
-    decrypt_game(game_path)
-    print "\r#{GREEN_COLOR}Game Decrypted.#{' ' * 10}#{RESET_COLOR}\n"
-
+    decrypt_game(game_path, forced=force_decrypt, remove_ex=false)
     if output_path.empty?
       @output_path = "Decompiled"
     else
@@ -37,13 +34,14 @@ class RVData2Decompiler
         next unless file_basename.include?(target_basename)
       end
 
-      print "#{GREEN_COLOR}Reading #{filename}...#{RESET_COLOR}"
+      print "#{BLUE_COLOR}Reading #{filename}...#{RESET_COLOR}"
 
       File.open(join(input_path, filename), 'rb') do |rvdata2_file|
         @rvdata2_data = Marshal.load(rvdata2_file.read)
       end
 
-      print "\r#{GREEN_COLOR}Decompiling #{filename}...#{' ' * 10}#{RESET_COLOR}"
+      clear_line
+      print "\r#{BLUE_COLOR}Decompiling #{filename}...#{RESET_COLOR}"
 
       Dir.mkdir(@output_path) unless Dir.exist?(@output_path)
       case file_basename
@@ -95,7 +93,8 @@ class RVData2Decompiler
 
       end
 
-      print "\r#{GREEN_COLOR}Decompiled #{filename}.#{' ' * 10}#{RESET_COLOR}\n"
+      clear_line
+      print "\r#{GREEN_COLOR}Decompiled #{filename}.#{RESET_COLOR}\n"
 
     end
 
@@ -153,8 +152,11 @@ class RVData2Decompiler
 
       last_indentation = 0
       event.list.each_with_index do |event_command, j|
-        event_code = event_command.code
-        next unless TARGETED_EVENT_COMMANDS.keys.include?(event_code) && !event_command.parameters.empty?
+        event_command_code = event_command.code
+
+        unless indexless
+          next unless TARGETED_EVENT_COMMANDS.keys.include?(event_command_code) && !event_command.parameters.empty?
+        end
 
         if event_command.indent < last_indentation
           common_events_file.write("\n")
@@ -162,7 +164,7 @@ class RVData2Decompiler
 
         last_indentation = event_command.indent
 
-        event_command_name = TARGETED_EVENT_COMMANDS[event_code]
+        event_command_name = TARGETED_EVENT_COMMANDS[event_command_code]
         if event_command_name == 'ShowText' && event_command.parameters[0].empty?
           event_command.parameters[0] = ' '
         end
@@ -291,7 +293,10 @@ class RVData2Decompiler
 
           page.list.each_with_index do |event_command, j|
             event_command_code = event_command.code
-            next unless TARGETED_EVENT_COMMANDS.keys.include?(event_command_code) && !event_command.parameters.empty?
+
+            unless indexless
+              next unless TARGETED_EVENT_COMMANDS.keys.include?(event_command_code) && !event_command.parameters.empty?
+            end
 
             if event_command.indent != last_indentation && event_command.indent == 0
               lines.append("\n")
@@ -565,7 +570,10 @@ class RVData2Decompiler
 
           page.list.each_with_index do |event_command, k|
             event_command_code = event_command.code
-            next unless TARGETED_EVENT_COMMANDS.keys.include?(event_command_code) && !event_command.parameters.empty?
+
+            unless indexless
+              next unless TARGETED_EVENT_COMMANDS.keys.include?(event_command_code) && !event_command.parameters.empty?
+            end
 
             if event_command.indent != last_indentation && event_command.indent == 0
               lines.append("\n")

@@ -15,6 +15,7 @@ options[:target_basename] = ''
 options[:input] = ''
 options[:output] = ''
 options[:indexless] = true
+options[:force_decrypt] = false
 
 while (arg = ARGV.shift)
 
@@ -31,6 +32,8 @@ while (arg = ARGV.shift)
     options[:output] = ARGV.shift
   when '--switch-indexless'
     options[:indexless] = false
+  when '--force-decrypt'
+    options[:force_decrypt] = true
   when '-h', '--help'
     print USAGE
     $stdout.flush
@@ -56,12 +59,21 @@ end
 
 if not options[:decompile].nil?
   d = RVData2Decompiler.new
-  d.decompile(options[:decompile], output_path=options[:output], target_basename=options[:target_basename], indexless=options[:indexless])
+  d.decompile(options[:decompile],
+              output_path=options[:output],
+              target_basename=options[:target_basename],
+              indexless=options[:indexless],
+              force_decrypt=options[:force_decrypt])
 
 
 elsif not options[:compile].nil?
   c = RVData2Compiler.new
-  c.compile(options[:compile], input_path=options[:input], output_path=options[:output], target_basename=options[:target_basename], indexless=options[:indexless])
+  c.compile(options[:compile],
+            input_path=options[:input],
+            output_path=options[:output],
+            target_basename=options[:target_basename],
+            indexless=options[:indexless],
+            force_decrypt=options[:force_decrypt])
 
 
 end
