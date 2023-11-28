@@ -24,7 +24,7 @@ Call the VXAceTranslator.exe file with the following arguments:-
 Optional Arguments:
 - -t TARGET_FILENAME: Specifies a target filename to decompile/compile specific files. Only files with the given target filename included in their base name will be processed.
 - --force-decrypt: Forces the translator to decrypt the game and extract raw data files, even if the game is already decrypted.
-- --switch-indexless: Disables indexless mode and re-enables indexing mode.
+- --switch-indexless: Disables indexless mode and re-enables indexing mode (Explained below).
 
 # Examples
 Example 1:-
@@ -44,6 +44,17 @@ Example 3:-
 ```Decompiling: VXAceTranslator.exe -d path/to/game -t Map001```
   
 ```Compiling: VXAceTranslator.exe -c path/to/game -t Map001```
+
+# How to correctly insert scripts
+Incase you want to insert new scripts without having to manually renumber all the scripts following it, there's a featured special syntax that makes it easy to achive this, normally a script will be named in this format:-
+
+`Index - ScriptName.rb`
+
+To insert a new script after a spacific script, you have to rename your new script to be like this:-
+
+`index+1 - NewScriptName.rb`
+
+This will insert the new scrip after that `Index` by 1, you can surly use any other numbers other than 1 to place it even further.
 
 # Indexless vs Indexing Mode
 Those are modes specify how to read and write event commands in CommonEvents.rvdata2, Maps.rvdata2 and Troops.rvdata2.
