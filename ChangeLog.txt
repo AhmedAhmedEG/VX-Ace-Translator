@@ -1,14 +1,8 @@
-VX Ace Translator v2.25.14.16:-
+VX Ace Translator v2.26.15.16:-
 
 [Minor]
--Added a new argument (--force-decrypt) that will force the translator to always decrypt the game before compiling/decompiling.
+-Added support for custom scripts modification, being able creat custom subfolders and remove/add scripts with ace.
 
 [Tweaks]
--Now ex related files will be removed only by the compiler.
--Added more colors for translator outputs.
-
-[Bug Fixes]
--Fixed a critical bug where the decompiler was ignoring event commands with empty parameters in indexless mode.
--Fixed a bug in the translator output where the terminal cursor was pushed away and glitching.
--Fixed a bug where the translator was reporting "Game Decrypted" even if it has not.
--Fixed a critical bug where scripts compiler was not working correctly.
+-Added support for scripts folder structuring, now scripts will be decompiled/compiled in the correct subfolder structure
+they was meant to be originally.

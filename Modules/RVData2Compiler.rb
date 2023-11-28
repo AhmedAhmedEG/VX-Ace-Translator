@@ -1,5 +1,6 @@
-require 'fileutils'
 require_relative 'RPG'
+require 'fileutils'
+require 'pathname'
 
 class RVData2Compiler
 
@@ -673,13 +674,59 @@ class RVData2Compiler
   end
 
   def compile_scripts
-
     return false unless Dir.exist?(join(@input_path, 'Scripts'))
-    @rvdata2_data.each_with_index  do |script, i|
-      script_path =  join(@input_path, 'Scripts', "#{i} - #{File.basename(script[1])}.rb")
 
-      File.open(script_path, 'rb') do |script_file|
-        @rvdata2_data[i][2] = Zlib::Deflate.deflate(script_file.read)
+    additional_scripts = {}
+    base_scripts = {}
+
+    @rvdata2_data.clear
+    Dir.glob("#{join(@input_path, 'Scripts', '**', '*')}.rb") do |script_path|
+      next if %w[. ..].include?(script_path)
+
+      script_relative_path = Pathname(script_path).relative_path_from(join(@input_path, 'Scripts'))
+      case File.basename(script_path)
+      when /^(\d+) - (.*).rb/
+        script_relative_path = script_relative_path.dirname.to_s == '.'? $2.to_s : join(script_relative_path.dirname.to_s, $2.to_s)
+
+        File.open(script_path) do |script_file|
+          base_scripts[$1.to_i] = [0, script_relative_path, Zlib::Deflate.deflate(script_file.read)]
+        end
+
+      when /^(\d+)\+(\d+) - (.*).rb/
+        script_relative_path = script_relative_path.dirname.to_s == '.'? $3.to_s : join(script_relative_path.dirname.to_s, $3.to_s)
+
+        File.open(script_path) do |script_file|
+
+          unless additional_scripts.include?($1.to_i)
+            additional_scripts[$1.to_i] = {}
+          end
+
+          additional_scripts[$1.to_i][$2.to_i] = [0, script_relative_path, Zlib::Deflate.deflate(script_file.read)]
+        end
+
+      else
+        next
+
+      end
+
+    end
+
+    base_scripts.keys.sort.each do |ind|
+      @rvdata2_data.append(base_scripts[ind])
+    end
+
+    additional_scripts.keys.sort.reverse.each do |script_ind|
+
+      additional_scripts[script_ind].keys.sort.each do |ind|
+
+        if ind >= @rvdata2_data.length
+          @rvdata2_data.append(additional_scripts[script_ind][ind])
+
+        else
+          @rvdata2_data.insert(script_ind + ind, additional_scripts[script_ind][ind])
+
+        end
+
       end
 
     end

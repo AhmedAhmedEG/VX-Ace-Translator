@@ -356,14 +356,13 @@ class RVData2Decompiler
   def decompile_scripts
 
     @rvdata2_data.each_with_index do |script, i|
-      script_path = join(@output_path, 'Scripts', "#{i} - #{File.basename(script[1])}.rb")
-      Dir.mkdir(File.dirname(script_path)) unless Dir.exist?(File.dirname(script_path))
+      script_path = join(@output_path, 'Scripts', File.dirname(script[1]))
+      FileUtils.mkdir_p(script_path) unless Dir.exist?(script_path)
 
-      File.open(script_path, 'wb') do |script_file|
+      script_filename = "#{i} - #{File.basename(script[1])}.rb"
+      File.open(join(script_path, script_filename), 'wb') do |script_file|
         script_file.write(Zlib::Inflate.inflate(script[2]))
       end
-
-      script.delete_at(2)
 
     end
 
