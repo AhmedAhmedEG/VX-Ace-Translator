@@ -1,8 +1,4 @@
-VX Ace Translator v2.26.15.16:-
+VX Ace Translator v2.26.15.17:-
 
-[Minor]
--Added support for custom scripts modification, being able creat custom subfolders and remove/add scripts with ace.
-
-[Tweaks]
--Added support for scripts folder structuring, now scripts will be decompiled/compiled in the correct subfolder structure
-they was meant to be originally.
+[Bug Fixes]
+-Fixed a critical bug where compiler input path would fail to be read if it includes backslashes.

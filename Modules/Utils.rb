@@ -251,14 +251,5 @@ def decrypt_game(game_path, forced=false, remove_ex=true)
 end
 
 def join(*paths)
-
-  if paths[0].include?('\\')
-    joined_path = File.join(paths).gsub("/", "\\")
-  elsif paths[0].include?('/')
-    joined_path = File.join(paths).gsub("\\", "/")
-  else
-    joined_path = File.join(paths)
-  end
-
-  joined_path
+  File.join(*paths).gsub('\\', '/')
 end

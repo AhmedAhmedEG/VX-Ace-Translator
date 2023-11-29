@@ -5,6 +5,7 @@ require_relative 'Modules/RPG'
 require 'optparse'
 require 'zlib'
 
+$test = false
 $stdout.sync = true
 
 USAGE = "#{RED_COLOR}Decompiler Usage: RPGMakerVXAceTranslator.rb -d GAME_DIR -o OUTPUT_DIR [Optional]

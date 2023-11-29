@@ -680,15 +680,20 @@ class RVData2Compiler
     base_scripts = {}
 
     @rvdata2_data.clear
+    puts "Input glob: " + "#{join(@input_path, 'Scripts', '**', '*')}.rb" if $test
     Dir.glob("#{join(@input_path, 'Scripts', '**', '*')}.rb") do |script_path|
+      puts  "Script path: " + script_path if $test
       next if %w[. ..].include?(script_path)
 
       script_relative_path = Pathname(script_path).relative_path_from(join(@input_path, 'Scripts'))
+      puts "Script filename: " + File.basename(script_path) if $test
+
       case File.basename(script_path)
       when /^(\d+) - (.*).rb/
         script_relative_path = script_relative_path.dirname.to_s == '.'? $2.to_s : join(script_relative_path.dirname.to_s, $2.to_s)
 
         File.open(script_path) do |script_file|
+          puts script_file.size if $test
           base_scripts[$1.to_i] = [0, script_relative_path, Zlib::Deflate.deflate(script_file.read)]
         end
 
@@ -696,6 +701,7 @@ class RVData2Compiler
         script_relative_path = script_relative_path.dirname.to_s == '.'? $3.to_s : join(script_relative_path.dirname.to_s, $3.to_s)
 
         File.open(script_path) do |script_file|
+          puts script_file.size if $test
 
           unless additional_scripts.include?($1.to_i)
             additional_scripts[$1.to_i] = {}
