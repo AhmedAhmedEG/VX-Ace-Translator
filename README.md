@@ -18,33 +18,35 @@ Efficient translator for RPG Maker VX Ace games, fully written in Ruby, that can
 # How to Use
 Call the VXAceTranslator.exe file with the following arguments:-
 
-```Decompiler Usage: RPGMakerVXAceTranslator.exe -d GAME_DIR -o OUTPUT_DIR [Optional]```
+```Decompiler Usage: VXAceTranslator.exe -d "GAME_DIR" -o "OUTPUT_DIR" [Optional]```
 
-```Compiler Usage: RPGMakerVXAceTranslator.exe -c GAME_DIR -i INPUT_DIR [Optional] -o OUTPUT_DIR [Optional]```
+```Compiler Usage: VXAceTranslator.exe -c "GAME_DIR" -i "INPUT_DIR" [Optional] -o "OUTPUT_DIR" [Optional]```
 
 Optional Arguments:
 - -t TARGET_FILENAME: Specifies a target filename to decompile/compile specific files. Only files with the given target filename included in their base name will be processed.
 - --force-decrypt: Forces the translator to decrypt the game and extract raw data files, even if the game is already decrypted.
 - --switch-indexless: Disables indexless mode and re-enables indexing mode (Explained below).
 
+> **_NOTE:_** It is crucial to consistently enclose paths within double quotes when entering them in a terminal, as not doing so can lead to misleading errors if the path contains any spaces.
+
 # Examples
-Example 1:-
+Example 1 - Decompiling/Compiling all supported rvdata2 files.:-
 
-```Decompiling: VXAceTranslator.exe -d path/to/game```
+```Decompiling: VXAceTranslator.exe -d "path/to/game"```
   
-```Compiling: VXAceTranslator.exe -c path/to/game```
+```Compiling: VXAceTranslator.exe -c "path/to/game"```<br/><br/>
 
-Example 2:-
+Example 2 - Decompiling/Compiling rvdata2 files that start with the word "Map" in their name.:-
 
-```Decompiling: VXAceTranslator.exe -d path/to/game -t Map```
+```Decompiling: VXAceTranslator.exe -d "path/to/game" -t Map```
   
-```Compiling: VXAceTranslator.exe -c path/to/game -t Map```
+```Compiling: VXAceTranslator.exe -c "path/to/game" -t Map```<br/><br/>
 
-Example 3:-
+Example 3 - Decompiling/Compiling Map001.rvdata2 file only.:-
 
-```Decompiling: VXAceTranslator.exe -d path/to/game -t Map001```
+```Decompiling: VXAceTranslator.exe -d "path/to/game" -t Map001```
   
-```Compiling: VXAceTranslator.exe -c path/to/game -t Map001```
+```Compiling: VXAceTranslator.exe -c "path/to/game" -t Map001```
 
 # How to Correctly Insert Scripts
 Incase you want to insert new scripts without having to manually renumber all the scripts following it, there's a featured special syntax that makes it easy to achive this, normally a script will be named in this format:-
