@@ -1,0 +1,63 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "RPGMakerDecrypter-cli/2.0.0": {
+        "dependencies": {
+          "CommandLineParser": "2.9.1",
+          "RPGMakerDecrypter.Common": "1.0.0",
+          "RPGMakerDecrypter.Decrypter": "2.0.0"
+        },
+        "runtime": {
+          "RPGMakerDecrypter-cli.dll": {}
+        }
+      },
+      "CommandLineParser/2.9.1": {
+        "runtime": {
+          "lib/netstandard2.0/CommandLine.dll": {
+            "assemblyVersion": "2.9.1.0",
+            "fileVersion": "2.9.1.0"
+          }
+        }
+      },
+      "RPGMakerDecrypter.Common/1.0.0": {
+        "runtime": {
+          "RPGMakerDecrypter.Common.dll": {}
+        }
+      },
+      "RPGMakerDecrypter.Decrypter/2.0.0": {
+        "runtime": {
+          "RPGMakerDecrypter.Decrypter.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "RPGMakerDecrypter-cli/2.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "CommandLineParser/2.9.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-OE0sl1/sQ37bjVsPKKtwQlWDgqaxWgtme3xZz7JssWUzg5JpMIyHgCTY9MVMxOg48fJ1AgGT3tgdH5m/kQ5xhA==",
+      "path": "commandlineparser/2.9.1",
+      "hashPath": "commandlineparser.2.9.1.nupkg.sha512"
+    },
+    "RPGMakerDecrypter.Common/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "RPGMakerDecrypter.Decrypter/2.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

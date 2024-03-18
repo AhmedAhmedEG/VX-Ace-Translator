@@ -3,16 +3,15 @@ require 'fileutils'
 require 'pathname'
 
 class RVData2Compiler
+  attr_accessor :input_path
+  attr_accessor :rvdata2_data
+  attr_accessor :indentation
 
   def initialize
     @input_path = ''
     @rvdata2_data = []
     @indentation = ' ' * 2
   end
-
-  attr_accessor :input_path
-  attr_accessor :rvdata2_data
-  attr_accessor :indentation
 
   def compile(game_path, input_path='', output_path='', target_basename='', indexless=true, force_decrypt=false)
     game_data_path = join(game_path, 'Data')
@@ -792,6 +791,9 @@ class RVData2Compiler
         case line
         when /^State (\d+)/
           ind = $1.to_i
+
+        when /^Icon Index = (\d+)/
+          @rvdata2_data[ind].icon_index = $1.to_i
 
         when /^Message 1 = (".*")/
           @rvdata2_data[ind].message1 = eval($1.to_s)

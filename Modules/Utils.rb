@@ -234,7 +234,7 @@ def decrypt_game(game_path, forced=false, remove_ex=true)
       FileUtils.rm_r(game_data_path)
     end
 
-    system("\"#{decrypter_path}\" \"#{rgss3a_path}\"")
+    system("\"#{decrypter_path}\" \"#{rgss3a_path}\" --overwrite")
     File.rename(rgss3a_path, rgss3a_path + '.old')
 
     clear_line

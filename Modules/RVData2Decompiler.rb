@@ -1,16 +1,15 @@
 require 'stringio'
 
 class RVData2Decompiler
+  attr_accessor :output_path
+  attr_accessor :rvdata2_data
+  attr_accessor :indentation
 
   def initialize
     @output_path = ''
     @rvdata2_data = []
     @indentation = ' ' * 2
   end
-
-  attr_accessor :output_path
-  attr_accessor :rvdata2_data
-  attr_accessor :indentation
 
   def decompile(game_path, output_path='', target_basename='', indexless=true, force_decrypt=false)
     input_path = join(game_path, 'Data')
@@ -397,6 +396,7 @@ class RVData2Decompiler
         next if state.nil?
 
         states_file.write("State #{i}\n")
+        states_file.write("Icon Index = #{textualize(state.icon_index)}\n")
         states_file.write("Message 1 = #{textualize(state.message1)}\n")
         states_file.write("Message 2 = #{textualize(state.message2)}\n")
         states_file.write("Message 3 = #{textualize(state.message3)}\n")
