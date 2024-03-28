@@ -140,8 +140,7 @@ end
 
 # Convert an class attribute to a parsable string, along with unicode characters un-escaping.
 def textualize(attribute)
-  # attribute.inspect.gsub(/\\u([\da-fA-F]{4})/) { [$1.to_i(16)].pack("U*") }
-  attribute.inspect
+  attribute.inspect.gsub(/\\u([\da-fA-F]{4})/) { [$1.to_i(16)].pack("U*") }
 end
 
 def serialize_parameters(parameters)
@@ -234,7 +233,7 @@ def decrypt_game(game_path, forced=false, remove_ex=true)
       FileUtils.rm_r(game_data_path)
     end
 
-    system("\"#{decrypter_path}\" \"#{rgss3a_path}\" --overwrite")
+    system("\"#{decrypter_path}\" \"#{rgss3a_path}\"")
     File.rename(rgss3a_path, rgss3a_path + '.old')
 
     clear_line

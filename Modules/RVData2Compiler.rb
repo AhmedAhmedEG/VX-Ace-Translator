@@ -243,27 +243,34 @@ class RVData2Compiler
             end
 
             indent = $1.to_s.length / @indentation.length
+            code = TARGETED_EVENT_COMMANDS.key($3)
             parameters = eval($4.to_s)
 
-            deserialize_parameters(parameters)
+            unless [355, 655].include?(code)
+              deserialize_parameters(parameters)
+            end
 
-            event_command = RPG::EventCommand.new(code=TARGETED_EVENT_COMMANDS.key($3), indent=indent - 1, parameters=parameters)
+            event_command = RPG::EventCommand.new(code=code, indent=indent - 1, parameters=parameters)
             added_event_commands[$2.to_i] = event_command
 
           when /(\d+)-(\D+?)\((.*)\)/
             parameters = eval($3.to_s)
-            deserialize_parameters(parameters)
-
-            if $1.to_i >= @rvdata2_data[event_ind].list.length
-              STDERR.puts "Command #{$1} is out of range at CommonEvent #{event_ind}."
-              break
-            end
 
             begin
-              @rvdata2_data[event_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
+              code = TARGETED_EVENT_COMMANDS.key($2)
+              @rvdata2_data[event_ind].list[$1.to_i].code = code
             rescue NoMethodError => e
               STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$1}, #{$2}."
               STDERR.puts e
+              break
+            end
+
+            unless [355, 655].include?(code)
+              deserialize_parameters(parameters)
+            end
+
+            if $1.to_i >= @rvdata2_data[event_ind].list.length
+              STDERR.puts "Command #{$1} is out of range at CommonEvent #{event_ind}."
               break
             end
 
@@ -320,16 +327,18 @@ class RVData2Compiler
 
             end
 
-            code = TARGETED_EVENT_COMMANDS.key($2)
             indent = $1.to_s.length / @indentation.length
+            code = TARGETED_EVENT_COMMANDS.key($2)
             parameters = eval($3.to_s)
 
             if $2 == 'ShowText' && parameters[0].empty?
               code = TARGETED_EVENT_COMMANDS.key('Empty')
               parameters.clear
             end
-
-            deserialize_parameters(parameters)
+            
+            unless [355, 655].include?(code)
+              deserialize_parameters(parameters)
+            end
 
             event_command = RPG::EventCommand.new(code=code, indent=indent - 1, parameters=parameters)
             @rvdata2_data[event_ind].list.append(event_command)
@@ -523,16 +532,18 @@ class RVData2Compiler
           end
 
           indent = $1.to_s.length / @indentation.length
+          code = TARGETED_EVENT_COMMANDS.key($3)
           parameters = eval($4.to_s)
 
-          deserialize_parameters(parameters)
+          unless [355, 655].include?(code)
+            deserialize_parameters(parameters)
+          end
 
-          event_command = RPG::EventCommand.new(code=TARGETED_EVENT_COMMANDS.key($3), indent=indent - 2, parameters=parameters)
+          event_command = RPG::EventCommand.new(code=code, indent=indent - 2, parameters=parameters)
           added_event_commands[event_ind] = {page_ind => {$2.to_i => event_command}}
 
         when /(\d+)-(\D+?)\((.*)\)/
           parameters = eval($3.to_s)
-          deserialize_parameters(parameters)
 
           if page_ind >= @rvdata2_data.events[event_ind].pages.length
             STDERR.puts "Page #{page_ind} is out of range at CommonEvent #{event_ind}."
@@ -545,11 +556,16 @@ class RVData2Compiler
           end
 
           begin
-            @rvdata2_data.events[event_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
+            code = TARGETED_EVENT_COMMANDS.key($2)
+            @rvdata2_data.events[event_ind].pages[page_ind].list[$1.to_i].code = code
           rescue NoMethodError => e
             STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, #{$1}, #{$2}"
             STDERR.puts e
             break
+          end
+
+          unless [355, 655].include?(code)
+            deserialize_parameters(parameters)
           end
 
           if $2 == 'ShowText' && parameters[0].empty?
@@ -626,7 +642,9 @@ class RVData2Compiler
             parameters.clear
           end
 
-          deserialize_parameters(parameters)
+          unless [355, 655].include?(code)
+            deserialize_parameters(parameters)
+          end
 
           event_command = RPG::EventCommand.new(code=code, indent=indent - 2, parameters=parameters)
           @rvdata2_data.events[event_ind].pages[page_ind].list.append(event_command)
@@ -976,16 +994,18 @@ class RVData2Compiler
           end
 
           indent = $1.to_s.length / @indentation.length
+          code = TARGETED_EVENT_COMMANDS.key($3)
           parameters = eval($4.to_s)
 
-          deserialize_parameters(parameters)
+          unless [355, 655].include?(code)
+            deserialize_parameters(parameters)
+          end
 
-          event_command = RPG::EventCommand.new(code=TARGETED_EVENT_COMMANDS.key($3), indent=indent - 1, parameters=parameters)
+          event_command = RPG::EventCommand.new(code=code, indent=indent - 1, parameters=parameters)
           added_event_commands[troop_ind] = {page_ind => {$2.to_i => event_command}}
 
         when /(\d+)-(\D+?)\((.*)\)/
           parameters = eval($3.to_s)
-          deserialize_parameters(parameters)
 
           if page_ind >= @rvdata2_data[troop_ind].pages.length
             STDERR.puts "Page #{page_ind} is out of range at Troop #{troop_ind}."
@@ -998,11 +1018,16 @@ class RVData2Compiler
           end
 
           begin
-            @rvdata2_data[troop_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key($2)
+            code = TARGETED_EVENT_COMMANDS.key($2)
+            @rvdata2_data[troop_ind].pages[page_ind].list[$1.to_i].code = code
           rescue NoMethodError => e
             STDERR.puts "Unknown Command at Troop #{troop_ind}, Page #{page_ind}, #{$1}, #{$2}"
             STDERR.puts e
             break
+          end
+
+          unless [355, 655].include?(code)
+            deserialize_parameters(parameters)
           end
 
           if $2 == 'ShowText' && parameters[0].empty?
@@ -1073,7 +1098,9 @@ class RVData2Compiler
             parameters.clear
           end
 
-          deserialize_parameters(parameters)
+          unless [355, 655].include?(code)
+            deserialize_parameters(parameters)
+          end
 
           event_command = RPG::EventCommand.new(code=code, indent=indent - 1, parameters=parameters)
           @rvdata2_data[troop_ind].pages[page_ind].list.append(event_command)

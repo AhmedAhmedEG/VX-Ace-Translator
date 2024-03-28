@@ -168,7 +168,9 @@ class RVData2Decompiler
           event_command.parameters[0] = ' '
         end
 
-        serialize_parameters(event_command.parameters)
+        unless [355, 655].include?(event_command_code)
+          serialize_parameters(event_command.parameters)
+        end
 
         if indexless
           common_events_file.write(@indentation * (event_command.indent + 1) +
@@ -308,7 +310,9 @@ class RVData2Decompiler
               event_command.parameters[0] = ' '
             end
 
-            serialize_parameters(event_command.parameters)
+            unless [355, 655].include?(event_command_code)
+              serialize_parameters(event_command.parameters)
+            end
 
             if indexless
               lines.append(@indentation * (event_command.indent + 2) +
@@ -585,7 +589,9 @@ class RVData2Decompiler
               event_command.parameters[0] = ' '
             end
 
-            serialize_parameters(event_command.parameters)
+            unless [355, 655].include?(event_command_code)
+              serialize_parameters(event_command.parameters)
+            end
 
             if indexless
               lines.append(@indentation * (event_command.indent + 1) + "#{event_command_name}(#{textualize(event_command.parameters)})\n")
