@@ -243,10 +243,13 @@ class RVData2Compiler
             end
 
             indent = $1.to_s.length / @indentation.length
-            code = TARGETED_EVENT_COMMANDS.key($3)
             parameters = eval($4.to_s)
 
-            unless [355, 655].include?(code)
+            code = TARGETED_EVENT_COMMANDS.key($3)
+            if code.nil?
+              STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$2}."
+              break
+            elsif not [355, 655].include?(code)
               deserialize_parameters(parameters)
             end
 
@@ -256,18 +259,15 @@ class RVData2Compiler
           when /(\d+)-(\D+?)\((.*)\)/
             parameters = eval($3.to_s)
 
-            begin
-              code = TARGETED_EVENT_COMMANDS.key($2)
-              @rvdata2_data[event_ind].list[$1.to_i].code = code
-            rescue NoMethodError => e
+            code = TARGETED_EVENT_COMMANDS.key($2)
+            if code.nil?
               STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$1}, #{$2}."
-              STDERR.puts e
               break
-            end
-
-            unless [355, 655].include?(code)
+            elsif not [355, 655].include?(code)
               deserialize_parameters(parameters)
             end
+
+            @rvdata2_data[event_ind].list[$1.to_i].code = code
 
             if $1.to_i >= @rvdata2_data[event_ind].list.length
               STDERR.puts "Command #{$1} is out of range at CommonEvent #{event_ind}."
@@ -335,8 +335,11 @@ class RVData2Compiler
               code = TARGETED_EVENT_COMMANDS.key('Empty')
               parameters.clear
             end
-            
-            unless [355, 655].include?(code)
+
+            if code.nil?
+              STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$2}."
+              break
+            elsif not [355, 655].include?(code)
               deserialize_parameters(parameters)
             end
 
@@ -526,16 +529,19 @@ class RVData2Compiler
         when /(\s*)(\d+)-(\D+?)\((.*)\)\+$/
 
           if $1.to_s.length % @indentation.length != 0 || $1.to_s.length < @indentation.length
-            STDERR.puts "Error at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$2} has incorrect indentation."
+            STDERR.puts "Error at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$2}, #{$3} has incorrect indentation."
             break
 
           end
 
           indent = $1.to_s.length / @indentation.length
-          code = TARGETED_EVENT_COMMANDS.key($3)
           parameters = eval($4.to_s)
 
-          unless [355, 655].include?(code)
+          code = TARGETED_EVENT_COMMANDS.key($3)
+          if code.nil?
+            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$2}, #{$3}."
+            break
+          elsif not [355, 655].include?(code)
             deserialize_parameters(parameters)
           end
 
@@ -555,18 +561,15 @@ class RVData2Compiler
             break
           end
 
-          begin
-            code = TARGETED_EVENT_COMMANDS.key($2)
-            @rvdata2_data.events[event_ind].pages[page_ind].list[$1.to_i].code = code
-          rescue NoMethodError => e
-            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, #{$1}, #{$2}"
-            STDERR.puts e
+          code = TARGETED_EVENT_COMMANDS.key($2)
+          if code.nil?
+            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$1}, #{$2}."
             break
-          end
-
-          unless [355, 655].include?(code)
+          elsif not [355, 655].include?(code)
             deserialize_parameters(parameters)
           end
+
+          @rvdata2_data.events[event_ind].pages[page_ind].list[$1.to_i].code = code
 
           if $2 == 'ShowText' && parameters[0].empty?
             @rvdata2_data.events[event_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key('Empty')
@@ -628,7 +631,7 @@ class RVData2Compiler
         when /(\s+)(\D+?)\((\[.*\])\)/
 
           if $1.to_s.length % @indentation.length != 0 || $1.to_s.length < @indentation.length
-            STDERR.puts "Error at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$1} has incorrect indentation."
+            STDERR.puts "Error at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$2} has incorrect indentation."
             break
 
           end
@@ -642,7 +645,10 @@ class RVData2Compiler
             parameters.clear
           end
 
-          unless [355, 655].include?(code)
+          if code.nil?
+            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$2}."
+            break
+          elsif not [355, 655].include?(code)
             deserialize_parameters(parameters)
           end
 
@@ -988,16 +994,19 @@ class RVData2Compiler
         when /(\s*)(\d+)-(\D+?)\((.*)\)\+$/
 
           if $1.to_s.length % @indentation.length != 0 || $1.to_s.length < @indentation.length
-            STDERR.puts "Error at Troop #{troop_ind}, Page #{page_ind}, Command #{$2} has incorrect indentation."
+            STDERR.puts "Error at Troop #{troop_ind}, Page #{page_ind}, Command #{$2}, #{$3} has incorrect indentation."
             break
 
           end
 
           indent = $1.to_s.length / @indentation.length
-          code = TARGETED_EVENT_COMMANDS.key($3)
           parameters = eval($4.to_s)
 
-          unless [355, 655].include?(code)
+          code = TARGETED_EVENT_COMMANDS.key($3)
+          if code.nil?
+            STDERR.puts "Unknown Command at Troop #{troop_ind}, Page #{page_ind}, Command #{$2}, #{$3}."
+            break
+          elsif not [355, 655].include?(code)
             deserialize_parameters(parameters)
           end
 
@@ -1017,18 +1026,15 @@ class RVData2Compiler
             break
           end
 
-          begin
-            code = TARGETED_EVENT_COMMANDS.key($2)
-            @rvdata2_data[troop_ind].pages[page_ind].list[$1.to_i].code = code
-          rescue NoMethodError => e
-            STDERR.puts "Unknown Command at Troop #{troop_ind}, Page #{page_ind}, #{$1}, #{$2}"
-            STDERR.puts e
+          code = TARGETED_EVENT_COMMANDS.key($2)
+          if code.nil?
+            STDERR.puts "Unknown Command at Troop #{troop_ind}, Page #{page_ind}, Command #{$1}, #{$2}."
             break
-          end
-
-          unless [355, 655].include?(code)
+          elsif not [355, 655].include?(code)
             deserialize_parameters(parameters)
           end
+
+          @rvdata2_data[troop_ind].pages[page_ind].list[$1.to_i].code = code
 
           if $2 == 'ShowText' && parameters[0].empty?
             @rvdata2_data[troop_ind].pages[page_ind].list[$1.to_i].code = TARGETED_EVENT_COMMANDS.key('Empty')
@@ -1084,7 +1090,7 @@ class RVData2Compiler
         when /(\s+)(\D+?)\((\[.*\])\)/
 
           if $1.to_s.length % @indentation.length != 0 || $1.to_s.length < @indentation.length
-            STDERR.puts "Error at Troop #{troop_ind}, Page #{page_ind}, Command #{$1} has incorrect indentation."
+            STDERR.puts "Error at Troop #{troop_ind}, Page #{page_ind}, Command #{$2} has incorrect indentation."
             break
 
           end
@@ -1098,7 +1104,10 @@ class RVData2Compiler
             parameters.clear
           end
 
-          unless [355, 655].include?(code)
+          if code.nil?
+            STDERR.puts "Unknown Command at Troop #{troop_ind}, Page #{page_ind}, Command #{$1}"
+            break
+          elsif not [355, 655].include?(code)
             deserialize_parameters(parameters)
           end
 
