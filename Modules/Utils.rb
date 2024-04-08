@@ -224,7 +224,6 @@ def decrypt_game(game_path, forced=false, remove_ex=true)
 
     if File.exist?(rgss3a_path + '.old')
       File.rename(rgss3a_path + '.old', rgss3a_path)
-
     elsif !File.exist?(rgss3a_path)
       return
     end
