@@ -219,14 +219,17 @@ end
 def decrypt_game(game_path, forced=false, remove_ex=true)
   game_data_path = join(game_path, 'Data')
 
-  unless !forced && (Dir.exist?(game_data_path) && !Dir.empty?(game_data_path))
-    print "#{BLUE_COLOR}Decrypting Game...#{RESET_COLOR}"
+  if forced || !Dir.exist?(game_data_path) || Dir.empty?(game_data_path)
     rgss3a_path = join(game_path, 'Game.rgss3a')
 
     if File.exist?(rgss3a_path + '.old')
       File.rename(rgss3a_path + '.old', rgss3a_path)
+
+    elsif !File.exist?(rgss3a_path)
+      return
     end
 
+    print "#{BLUE_COLOR}Decrypting Game...#{RESET_COLOR}"
     decrypter_path =  join('Resources', 'Tools', 'RPGMakerDecrypter.exe')
 
     if Dir.exist?(game_data_path)
