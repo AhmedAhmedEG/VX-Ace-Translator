@@ -1,6 +1,8 @@
 # Description
 Efficient translator for RPG Maker VX Ace games, fully written in Ruby, that can decompile/compile all text-related .rvdata2 files to a readable text files and vice-versa.
 
+If you love the project, any support from you will help to keep the project alive, you can support me on Paypal from here: https://paypal.me/AhmedAhmedEG?country.x=EG&locale.x=en_US
+
 # Features
 - Automatic decryption for rgss3a files if no "Data" folder is found in the game's directory.
 - Full support for modifying scripts, from adding, removing and even positionaly inserting them.
