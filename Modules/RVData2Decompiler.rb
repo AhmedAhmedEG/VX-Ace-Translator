@@ -357,8 +357,8 @@ class RVData2Decompiler
 
   # 2D Array, every row have [id, script name, zlib compressed text]
   def decompile_scripts
-
     @rvdata2_data.each_with_index do |script, i|
+      script[1] = script[1].gsub(/[<>:"\/\\|?*]/, '')
       script_path = join(@output_path, 'Scripts', File.dirname(script[1]))
       FileUtils.mkdir_p(script_path) unless Dir.exist?(script_path)
 
