@@ -229,13 +229,13 @@ def decrypt_game(game_path, forced=false, remove_ex=true)
     end
 
     print "#{BLUE_COLOR}Decrypting Game...#{RESET_COLOR}"
-    decrypter_path =  join('Resources', 'Tools', 'RPGMakerDecrypter.exe')
+    decrypter_path =  join('Resources', 'Tools', 'RPGMakerDecrypter-cli.exe')
 
     if Dir.exist?(game_data_path)
       FileUtils.rm_r(game_data_path)
     end
 
-    system("\"#{decrypter_path}\" \"#{rgss3a_path}\"")
+    system("\"#{decrypter_path}\" \"#{rgss3a_path}\" -w")
     File.rename(rgss3a_path, rgss3a_path + '.old')
 
     clear_line
