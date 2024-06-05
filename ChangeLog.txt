@@ -1,4 +1,0 @@
-VX Ace Translator v2.26.15.17:-
-
-[Bug Fixes]
--Fixed a critical bug where compiler input path would fail to be read if it includes backslashes.
