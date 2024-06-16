@@ -13,7 +13,7 @@ If you love the project, any support from you will help to keep the project aliv
 - Filtering to specifically target file(s) for decompiling/compiling.
 - Full support for all event command types.
 - Two modes for decompiling/compiling of event commands: indexless and indexing modes.
-- Small file output size, limited to text files and Ruby scripts only.
+- Small file output size, consists of text files and Ruby scripts only.
 - Error handling for out-of-bound pages, common events, and event commands, including indentation.
 - Beautiful and informative terminal outputs.
 
