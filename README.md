@@ -27,7 +27,7 @@ Call the VXAceTranslator.exe file with the following arguments:-
 Optional Arguments:
 - -t TARGET_FILENAME: Specifies a target filename to decompile/compile specific files. Only files with the given target filename included in their base name will be processed.
 - --force-decrypt: Forces the translator to decrypt the game and extract raw data files, even if the game is already decrypted.
-- --switch-indexless: Disables indexless mode and re-enables indexing mode (Explained below).
+- --switch-indexless: Enables indexing mode (Explained below).
 
 > **_NOTE:_** It is crucial to consistently enclose paths within double quotes when entering them in a terminal, as not doing so can lead to misleading errors if the path contains any spaces.
 
