@@ -1,4 +1,5 @@
 require 'stringio'
+require 'fileutils'
 
 class RVData2Decompiler
   attr_accessor :output_path
@@ -8,6 +9,7 @@ class RVData2Decompiler
   def initialize
     @output_path = ''
     @rvdata2_data = []
+    @rvdata2_path = ''
     @indentation = ' ' * 2
   end
 
@@ -23,24 +25,24 @@ class RVData2Decompiler
 
     FileUtils.mkdir_p(@output_path) unless Dir.exist?(@output_path)
 
-    Dir.foreach(input_path) do |filename|
-      next if %w[. ..].include?(filename) || File.directory?(join(input_path, filename))
+    Dir.glob(join(input_path, '**', '*.rvdata2')) do |filepath|
 
-      file_basename = File.basename(filename, '.*')
+      file_basename = File.basename(filepath, '.*')
       next unless SUPPORTED_FORMATS.any? { |s| file_basename.include?(s) }
 
       unless target_basename.empty?
         next unless file_basename.include?(target_basename)
       end
 
-      print "#{BLUE_COLOR}Reading #{filename}...#{RESET_COLOR}"
+      @rvdata2_path = Pathname.new(filepath).relative_path_from(input_path).to_s
+      print "#{BLUE_COLOR}Reading #{@rvdata2_path}...#{RESET_COLOR}"
 
-      File.open(join(input_path, filename), 'rb') do |rvdata2_file|
+      File.open(join(input_path, @rvdata2_path), 'rb') do |rvdata2_file|
         @rvdata2_data = Marshal.load(rvdata2_file.read)
       end
 
       clear_line
-      print "\r#{BLUE_COLOR}Decompiling #{filename}...#{RESET_COLOR}"
+      print "\r#{BLUE_COLOR}Decompiling #{@rvdata2_path}...#{RESET_COLOR}"
 
       Dir.mkdir(@output_path) unless Dir.exist?(@output_path)
       case file_basename
@@ -93,7 +95,7 @@ class RVData2Decompiler
       end
 
       clear_line
-      print "\r#{GREEN_COLOR}Decompiled #{filename}.#{RESET_COLOR}\n"
+      print "\r#{GREEN_COLOR}Decompiled #{@rvdata2_path}.#{RESET_COLOR}\n"
 
     end
 
@@ -164,6 +166,10 @@ class RVData2Decompiler
         last_indentation = event_command.indent
 
         event_command_name = TARGETED_EVENT_COMMANDS[event_command_code]
+        if event_command_name.nil?
+          event_command_name = event_command_code.to_s
+        end
+
         if event_command_name == 'ShowText' && event_command.parameters[0].empty?
           event_command.parameters[0] = ' '
         end
@@ -272,9 +278,10 @@ class RVData2Decompiler
 
   # Instance of RPG::Map class
   def decompile_map(filename, indexless=true)
-    Dir.mkdir(join(@output_path, 'Maps')) unless Dir.exist?(join(@output_path, 'Maps'))
+    rvdata2_output_path = File.dirname(join(@output_path, 'Maps', @rvdata2_path))
+    FileUtils.mkdir_p(rvdata2_output_path) unless Dir.exist?(rvdata2_output_path)
 
-    File.open(join(@output_path, 'Maps', "#{filename}.txt"), 'w:UTF-8') do |map_file|
+    File.open(join(rvdata2_output_path, "#{filename}.txt"), 'w:UTF-8') do |map_file|
       map_file.write("Display Name = #{textualize(@rvdata2_data.display_name)}\n")
       map_file.write("Parallax Name = #{textualize(@rvdata2_data.parallax_name)}\n")
       map_file.write("Note = #{textualize(@rvdata2_data.note)}\n")
@@ -306,6 +313,10 @@ class RVData2Decompiler
             last_indentation = event_command.indent
 
             event_command_name = TARGETED_EVENT_COMMANDS[event_command_code]
+            if event_command_name.nil?
+              event_command_name = event_command_code.to_s
+            end
+
             if event_command_name == 'ShowText' && event_command.parameters[0].empty?
               event_command.parameters[0] = ' '
             end
@@ -340,8 +351,10 @@ class RVData2Decompiler
 
   # Hash of [id: RPG::MapInfo instance] pairs
   def decompile_map_infos
+    rvdata2_output_path = File.dirname(join(@output_path, 'Maps', @rvdata2_path))
+    FileUtils.mkdir_p(rvdata2_output_path) unless Dir.exist?(rvdata2_output_path)
 
-    File.open(join(@output_path, 'MapInfos.txt'), 'w:UTF-8') do |map_infos_file|
+    File.open(join(rvdata2_output_path, 'MapInfos.txt'), 'w:UTF-8') do |map_infos_file|
       sorted_keys = @rvdata2_data.keys.sort
 
       sorted_keys.each do |key|
@@ -358,8 +371,9 @@ class RVData2Decompiler
   # 2D Array, every row have [id, script name, zlib compressed text]
   def decompile_scripts
     @rvdata2_data.each_with_index do |script, i|
-      script[1] = script[1].gsub(/[<>:"\/\\|?*]/, '')
+      script[1] = script[1].gsub(/[<>:"\\|?*]/, '')
       script_path = join(@output_path, 'Scripts', File.dirname(script[1]))
+
       FileUtils.mkdir_p(script_path) unless Dir.exist?(script_path)
 
       script_filename = "#{i} - #{File.basename(script[1])}.rb"

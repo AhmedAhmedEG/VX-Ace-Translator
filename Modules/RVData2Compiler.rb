@@ -10,6 +10,7 @@ class RVData2Compiler
   def initialize
     @input_path = ''
     @rvdata2_data = []
+    @rvdata2_path = ''
     @indentation = ' ' * 2
   end
 
@@ -29,19 +30,19 @@ class RVData2Compiler
       FileUtils.mkdir_p(output_path) unless Dir.exist?(output_path)
     end
 
-    Dir.foreach(game_data_path) do |filename|
-      next if %w[. ..].include?(filename) || File.directory?(join(game_data_path, filename))
+    Dir.glob(join(game_data_path, '**', '*.rvdata2')) do |filepath|
 
-      file_basename = File.basename(filename, '.*')
+      file_basename = File.basename(filepath, '.*')
       next unless SUPPORTED_FORMATS.any? { |s| file_basename.include?(s) }
 
       unless target_basename.empty?
         next unless file_basename.include?(target_basename)
       end
 
-      print "#{BLUE_COLOR}Reading #{filename}...#{RESET_COLOR}"
+      @rvdata2_path = Pathname.new(filepath).relative_path_from(game_data_path).to_s
+      print "#{BLUE_COLOR}Reading #{@rvdata2_path}...#{RESET_COLOR}"
 
-      File.open(join(game_data_path, filename), "rb") do |rvdata2_file|
+      File.open(join(game_data_path, @rvdata2_path), "rb") do |rvdata2_file|
         @rvdata2_data = Marshal.load(rvdata2_file.read)
       end
 
@@ -119,18 +120,18 @@ class RVData2Compiler
 
       if done
         clear_line
-        print "\r#{BLUE_COLOR}Compiling #{filename}...#{RESET_COLOR}"
+        print "\r#{BLUE_COLOR}Compiling #{@rvdata2_path}...#{RESET_COLOR}"
 
-        File.open(join(output_path, filename), "wb") do |rvdata2_file|
+        File.open(join(output_path, @rvdata2_path), "wb") do |rvdata2_file|
           rvdata2_file.write(Marshal.dump(@rvdata2_data))
         end
 
         clear_line
-        print "\r#{GREEN_COLOR}Compiled #{filename}.#{RESET_COLOR}\n"
+        print "\r#{GREEN_COLOR}Compiled #{@rvdata2_path}.#{RESET_COLOR}\n"
 
       else
         clear_line
-        print "\r#{RED_COLOR}Skipped #{filename}.#{RESET_COLOR}\n"
+        print "\r#{RED_COLOR}Skipped #{@rvdata2_path}.#{RESET_COLOR}\n"
 
       end
 
@@ -247,8 +248,9 @@ class RVData2Compiler
 
             code = TARGETED_EVENT_COMMANDS.key($3)
             if code.nil?
-              STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$2}."
-              break
+              STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$2}, #{$3}, It's name will be used as the event code."
+              code = $3.to_i
+
             elsif not [355, 655].include?(code)
               deserialize_parameters(parameters)
             end
@@ -261,8 +263,9 @@ class RVData2Compiler
 
             code = TARGETED_EVENT_COMMANDS.key($2)
             if code.nil?
-              STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$1}, #{$2}."
-              break
+              STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$1}, #{$2}, It's name will be used as the event code."
+              code = $2.to_i
+
             elsif not [355, 655].include?(code)
               deserialize_parameters(parameters)
             end
@@ -319,7 +322,7 @@ class RVData2Compiler
           when /^Name = (".*")/
             @rvdata2_data[event_ind].name = eval($1.to_s)
 
-          when /(\s+)(\D+?)\((\[.*\])\)/
+          when /(\s+)(\w+?)\((\[.*\])\)/
 
             if $1.to_s.length % @indentation.length != 0 || $1.to_s.length < @indentation.length
               STDERR.puts "Error at CommonEvent #{event_ind}, Command #{$2} has incorrect indentation."
@@ -337,8 +340,9 @@ class RVData2Compiler
             end
 
             if code.nil?
-              STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$2}."
-              break
+              STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Command #{$2}, It's name will be used as the event code."
+              code = $2.to_i
+
             elsif not [355, 655].include?(code)
               deserialize_parameters(parameters)
             end
@@ -504,8 +508,9 @@ class RVData2Compiler
     event_ind = 0
     page_ind = 0
 
-    return false unless File.exist?(join(@input_path, 'Maps', "#{file_basename}.txt"))
-    File.open(join(@input_path, 'Maps', "#{file_basename}.txt"), 'r:UTF-8') do |map_file|
+    rvdata2_input_path = join(File.dirname(join(@input_path, 'Maps', @rvdata2_path)), "#{file_basename}.txt")
+    return false unless File.exist?(rvdata2_input_path)
+    File.open(rvdata2_input_path, 'r:UTF-8') do |map_file|
       added_event_commands = {}
 
       map_file.each_line do |line|
@@ -539,8 +544,9 @@ class RVData2Compiler
 
           code = TARGETED_EVENT_COMMANDS.key($3)
           if code.nil?
-            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$2}, #{$3}."
-            break
+            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$2}, #{$3}, It's name will be used as the event code."
+            code = $3.to_i
+
           elsif not [355, 655].include?(code)
             deserialize_parameters(parameters)
           end
@@ -563,8 +569,9 @@ class RVData2Compiler
 
           code = TARGETED_EVENT_COMMANDS.key($2)
           if code.nil?
-            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$1}, #{$2}."
-            break
+            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$1}, #{$2}, It's name will be used as the event code."
+            code = $2.to_i
+
           elsif not [355, 655].include?(code)
             deserialize_parameters(parameters)
           end
@@ -606,8 +613,9 @@ class RVData2Compiler
     event_ind = 0
     page_ind = 0
 
-    return false unless File.exist?(join(@input_path, 'Maps', "#{file_basename}.txt"))
-    File.open(join(@input_path, 'Maps', "#{file_basename}.txt"), 'r:UTF-8') do |map_file|
+    rvdata2_input_path = join(File.dirname(join(@input_path, 'Maps', @rvdata2_path)), "#{file_basename}.txt")
+    return false unless File.exist?(rvdata2_input_path)
+    File.open(rvdata2_input_path, 'r:UTF-8') do |map_file|
 
       map_file.each_line do |line|
 
@@ -646,8 +654,9 @@ class RVData2Compiler
           end
 
           if code.nil?
-            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$2}."
-            break
+            STDERR.puts "Unknown Command at CommonEvent #{event_ind}, Page #{page_ind}, Command #{$2}, It's name will be used as the event code."
+            code = $2.to_i
+
           elsif not [355, 655].include?(code)
             deserialize_parameters(parameters)
           end
@@ -669,9 +678,10 @@ class RVData2Compiler
   end
 
   def compile_map_infos
+    rvdata2_input_path = join(File.dirname(join(@input_path, 'Maps', @rvdata2_path)), "MapInfos.txt")
+    return false unless File.exist?(rvdata2_input_path)
 
-    return false unless File.exist?(join(@input_path, 'MapInfos.txt'))
-    File.open(join(@input_path, 'MapInfos.txt'), 'r:UTF-8') do |map_infos_file|
+    File.open(rvdata2_input_path, 'r:UTF-8') do |map_infos_file|
       id = 0
 
       map_infos_file.each_line do |line|
@@ -706,7 +716,6 @@ class RVData2Compiler
     puts "Input glob: " + "#{join(@input_path, 'Scripts', '**', '*')}.rb" if $test
     Dir.glob("#{join(@input_path, 'Scripts', '**', '*')}.rb") do |script_path|
       puts  "Script path: " + script_path if $test
-      next if %w[. ..].include?(script_path)
 
       script_relative_path = Pathname(script_path).relative_path_from(join(@input_path, 'Scripts'))
       puts "Script filename: " + File.basename(script_path) if $test
